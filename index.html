@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ラズパイプログラミング - コード共有サイト</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            color: #718096;
+            font-size: 1.2em;
+        }
+        
+        .code-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .code-section:hover {
+            transform: translateY(-5px);
+        }
+        
+        .code-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+            padding-left: 15px;
+        }
+        
+        .code-description {
+            color: #4a5568;
+            margin-bottom: 15px;
+            padding-left: 15px;
+        }
+        
+        .code-container {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.3s ease;
+            z-index: 10;
+        }
+        
+        .copy-btn:hover {
+            background: #5a67d8;
+        }
+        
+        .copy-btn.copied {
+            background: #48bb78;
+        }
+        
+        pre {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            overflow-x: auto;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        code {
+            font-family: 'Courier New', monospace;
+        }
+        
+        .usage-note {
+            background: #ebf8ff;
+            border-left: 4px solid #3182ce;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+        }
+        
+        .usage-note h4 {
+            color: #2c5282;
+            margin-bottom: 5px;
+        }
+        
+        .usage-note p {
+            color: #2d3748;
+            margin: 5px 0;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+        }
+        
+        .tag {
+            display: inline-block;
+            background: #e2e8f0;
+            color: #4a5568;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🍓 ラズパイプログラミング</h1>
+            <p class="subtitle">Pythonコード共有サイト - コピーして実行してみよう！</p>
+        </header>
+        
+        <div class="grid">
+            <!-- LED点滅プログラム -->
+            <div class="code-section">
+                <div class="code-title">🔴 LED点滅プログラム</div>
+                <div class="code-description">基本的なLED制御プログラムです。GPIO18ピンに接続したLEDが1秒間隔で点滅します。</div>
+                <div class="tag">初級</div>
+                <div class="tag">GPIO</div>
+                <div class="tag">LED</div>
+                
+                <div class="code-container">
+                    <button class="copy-btn" onclick="copyCode(this, 'led-blink')">コピー</button>
+                    <pre><code id="led-blink" class="language-python">import RPi.GPIO as GPIO
+import time
+
+# GPIOの設定
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(18, GPIO.OUT)
+
+print("LED点滅開始！Ctrl+Cで停止")
+
+try:
+    while True:
+        GPIO.output(18, GPIO.HIGH)  # LED点灯
+        print("LED ON")
+        time.sleep(1)
+        
+        GPIO.output(18, GPIO.LOW)   # LED消灯
+        print("LED OFF")
+        time.sleep(1)
+        
+except KeyboardInterrupt:
+    print("\nプログラム停止")
+    
+finally:
+    GPIO.cleanup()  # GPIOをクリーンアップ
+    print("GPIO cleanup完了")</code></pre>
+                </div>
+                
+                <div class="usage-note">
+                    <h4>🔧 接続方法</h4>
+                    <p>GPIO18 → LED+ → 抵抗(220Ω) → GND</p>
+                    <p>実行コマンド: <code>python3 led_blink.py</code></p>
+                </div>
+            </div>
+            
+            <!-- ボタン入力プログラム -->
+            <div class="code-section">
+                <div class="code-title">🔲 ボタン入力プログラム</div>
+                <div class="code-description">ボタンを押すとLEDが点灯するプログラムです。プルアップ抵抗を使用します。</div>
+                <div class="tag">初級</div>
+                <div class="tag">GPIO</div>
+                <div class="tag">ボタン</div>
+                
+                <div class="code-container">
+                    <button class="copy-btn" onclick="copyCode(this, 'button-led')">コピー</button>
+                    <pre><code id="button-led" class="language-python">import RPi.GPIO as GPIO
+import time
+
+# GPIOの設定
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(18, GPIO.OUT)    # LED用
+GPIO.setup(2, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # ボタン用
+
+print("ボタンでLED制御開始！Ctrl+Cで停止")
+print("ボタンを押してください")
+
+try:
+    while True:
+        if GPIO.input(2) == GPIO.LOW:  # ボタンが押された
+            GPIO.output(18, GPIO.HIGH)  # LED点灯
+            print("ボタンが押されました - LED ON")
+        else:
+            GPIO.output(18, GPIO.LOW)   # LED消灯
+        
+        time.sleep(0.1)  # CPUの負荷を軽減
+        
+except KeyboardInterrupt:
+    print("\nプログラム停止")
+    
+finally:
+    GPIO.cleanup()
+    print("GPIO cleanup完了")</code></pre>
+                </div>
+                
+                <div class="usage-note">
+                    <h4>🔧 接続方法</h4>
+                    <p>GPIO2 → ボタン → GND</p>
+                    <p>GPIO18 → LED+ → 抵抗(220Ω) → GND</p>
+                </div>
+            </div>
+            
+            <!-- 温湿度センサー -->
+            <div class="code-section">
+                <div class="code-title">🌡️ 温湿度センサー（DHT22）</div>
+                <div class="code-description">DHT22センサーで温度と湿度を測定するプログラムです。農業IoTの基本となります。</div>
+                <div class="tag">中級</div>
+                <div class="tag">センサー</div>
+                <div class="tag">IoT</div>
+                
+                <div class="code-container">
+                    <button class="copy-btn" onclick="copyCode(this, 'dht22')">コピー</button>
+                    <pre><code id="dht22" class="language-python">import Adafruit_DHT
+import time
+from datetime import datetime
+
+# センサーの設定
+sensor = Adafruit_DHT.DHT22
+pin = 4  # GPIO4に接続
+
+print("温湿度測定開始！Ctrl+Cで停止")
+
+try:
+    while True:
+        # センサーから値を読み取り
+        humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
+        
+        # 現在時刻を取得
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        if humidity is not None and temperature is not None:
+            print(f"{now} - 温度: {temperature:.1f}°C, 湿度: {humidity:.1f}%")
+        else:
+            print(f"{now} - センサーの読み取りに失敗しました")
+        
+        time.sleep(2)  # 2秒間隔で測定
+        
+except KeyboardInterrupt:
+    print("\n測定を停止しました")</code></pre>
+                </div>
+                
+                <div class="usage-note">
+                    <h4>🔧 セットアップ</h4>
+                    <p>1. ライブラリインストール: <code>pip3 install Adafruit_DHT</code></p>
+                    <p>2. 接続: VCC→3.3V, GND→GND, DATA→GPIO4</p>
+                </div>
+            </div>
+            
+            <!-- Lチカ応用 -->
+            <div class="code-section">
+                <div class="code-title">🎨 LEDパターン制御</div>
+                <div class="code-description">複数のLEDを使って様々なパターンで点滅させるプログラムです。</div>
+                <div class="tag">中級</div>
+                <div class="tag">GPIO</div>
+                <div class="tag">パターン</div>
+                
+                <div class="code-container">
+                    <button class="copy-btn" onclick="copyCode(this, 'led-pattern')">コピー</button>
+                    <pre><code id="led-pattern" class="language-python">import RPi.GPIO as GPIO
+import time
+
+# GPIOの設定
+GPIO.setmode(GPIO.BCM)
+led_pins = [18, 19, 20, 21]  # 4つのLEDピン
+
+# 全てのピンを出力として設定
+for pin in led_pins:
+    GPIO.setup(pin, GPIO.OUT)
+    GPIO.output(pin, GPIO.LOW)
+
+def pattern_1():
+    """順番に点灯"""
+    for pin in led_pins:
+        GPIO.output(pin, GPIO.HIGH)
+        time.sleep(0.3)
+        GPIO.output(pin, GPIO.LOW)
+
+def pattern_2():
+    """全点滅"""
+    for pin in led_pins:
+        GPIO.output(pin, GPIO.HIGH)
+    time.sleep(0.5)
+    for pin in led_pins:
+        GPIO.output(pin, GPIO.LOW)
+    time.sleep(0.5)
+
+def pattern_3():
+    """左右から中央へ"""
+    GPIO.output(18, GPIO.HIGH)
+    GPIO.output(21, GPIO.HIGH)
+    time.sleep(0.3)
+    GPIO.output(19, GPIO.HIGH)
+    GPIO.output(20, GPIO.HIGH)
+    time.sleep(0.3)
+    for pin in led_pins:
+        GPIO.output(pin, GPIO.LOW)
+    time.sleep(0.3)
+
+print("LEDパターン制御開始！Ctrl+Cで停止")
+
+try:
+    pattern = 1
+    while True:
+        print(f"パターン {pattern}")
+        
+        if pattern == 1:
+            pattern_1()
+        elif pattern == 2:
+            pattern_2()
+        else:
+            pattern_3()
+        
+        pattern = (pattern % 3) + 1  # 1,2,3を循環
+        time.sleep(0.5)
+        
+except KeyboardInterrupt:
+    print("\nプログラム停止")
+    
+finally:
+    GPIO.cleanup()
+    print("GPIO cleanup完了")</code></pre>
+                </div>
+            </div>
+            
+            <!-- PWM制御 -->
+            <div class="code-section">
+                <div class="code-title">🔆 PWM制御（LED調光）</div>
+                <div class="code-description">PWMを使ってLEDの明るさを段階的に変化させるプログラムです。</div>
+                <div class="tag">中級</div>
+                <div class="tag">PWM</div>
+                <div class="tag">調光</div>
+                
+                <div class="code-container">
+                    <button class="copy-btn" onclick="copyCode(this, 'pwm-led')">コピー</button>
+                    <pre><code id="pwm-led" class="language-python">import RPi.GPIO as GPIO
+import time
+
+# GPIOの設定
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(18, GPIO.OUT)
+
+# PWMオブジェクトを作成（1000Hz）
+pwm = GPIO.PWM(18, 1000)
+pwm.start(0)  # 0%の明るさから開始
+
+print("PWM LED制御開始！Ctrl+Cで停止")
+print("LEDが明暗を繰り返します")
+
+try:
+    while True:
+        # 明るくなる（0% → 100%）
+        print("明るくなっています...")
+        for duty_cycle in range(0, 101, 2):
+            pwm.ChangeDutyCycle(duty_cycle)
+            time.sleep(0.05)
+        
+        time.sleep(0.5)
+        
+        # 暗くなる（100% → 0%）
+        print("暗くなっています...")
+        for duty_cycle in range(100, -1, -2):
+            pwm.ChangeDutyCycle(duty_cycle)
+            time.sleep(0.05)
+        
+        time.sleep(0.5)
+        
+except KeyboardInterrupt:
+    print("\nプログラム停止")
+    
+finally:
+    pwm.stop()
+    GPIO.cleanup()
+    print("PWM停止、GPIO cleanup完了")</code></pre>
+                </div>
+            </div>
+            
+            <!-- サーボモーター -->
+            <div class="code-section">
+                <div class="code-title">🔄 サーボモーター制御</div>
+                <div class="code-description">PWMでサーボモーターを制御するプログラムです。角度指定で回転させます。</div>
+                <div class="tag">中級</div>
+                <div class="tag">サーボ</div>
+                <div class="tag">PWM</div>
+                
+                <div class="code-container">
+                    <button class="copy-btn" onclick="copyCode(this, 'servo')">コピー</button>
+                    <pre><code id="servo" class="language-python">import RPi.GPIO as GPIO
+import time
+
+# GPIOの設定
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(18, GPIO.OUT)
+
+# PWMオブジェクトを作成（50Hz）
+servo = GPIO.PWM(18, 50)
+servo.start(0)
+
+def set_angle(angle):
+    """角度を指定してサーボを動かす"""
+    duty_cycle = 2 + (angle / 18)
+    servo.ChangeDutyCycle(duty_cycle)
+    time.sleep(0.5)
+    servo.ChangeDutyCycle(0)  # 信号停止でジッターを防ぐ
+
+print("サーボモーター制御開始！Ctrl+Cで停止")
+print("サーボが0度、90度、180度を繰り返します")
+
+try:
+    while True:
+        print("0度に移動")
+        set_angle(0)
+        time.sleep(1)
+        
+        print("90度に移動")
+        set_angle(90)
+        time.sleep(1)
+        
+        print("180度に移動")
+        set_angle(180)
+        time.sleep(1)
+        
+        print("90度に戻る")
+        set_angle(90)
+        time.sleep(1)
+        
+except KeyboardInterrupt:
+    print("\nプログラム停止")
+    
+finally:
+    servo.stop()
+    GPIO.cleanup()
+    print("サーボ停止、GPIO cleanup完了")</code></pre>
+                </div>
+                
+                <div class="usage-note">
+                    <h4>🔧 接続方法</h4>
+                    <p>赤線→5V, 茶線→GND, オレンジ線→GPIO18</p>
+                    <p>※5V電源で動作させてください</p>
+                </div>
+            </div>
+            
+            <!-- ========================================= -->
+             <!-- 新しいコードセクション: dht22とディスプレイを使ったプログラム -->
+            <div class="code-section">
+                <div class="code-title">dht22とディスプレイを使ったプログラム</div>
+                <div class="code-description">dht22で取得したデータをディスプレイに表示させることができるプログラムです。</div>
+                <div class="tag">中級</div>
+                
+                <div class="code-container">
+                    <button class="copy-btn" onclick="copyCode(this, 'dht22_display')">コピー</button>
+                    <pre><code id="dht22_display" class="language-python">#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import time
+import board
+import adafruit_dht
+from RPLCD.i2c import CharLCD
+import os
+
+# lgpioを使用するように環境変数を設定
+os.environ['BLINKA_USE_LGPIO'] = '1'
+
+# DHT22センサーの初期化(GPIO27を使用)
+dht_device = adafruit_dht.DHT22(board.D27, use_pulseio=False)
+
+# LCD1602の初期化(アドレス0x27)
+lcd = CharLCD('PCF8574', 0x27, cols=16, rows=2)
+
+def main():
+    try:
+        lcd.clear()
+        lcd.cursor_pos = (0, 0)
+        lcd.write_string('DHT22 Sensor')
+        time.sleep(2)
+        
+        while True:
+            try:
+                # 温度と湿度を取得
+                temperature = dht_device.temperature
+                humidity = dht_device.humidity
+                
+                # LCDに表示
+                lcd.clear()
+                lcd.cursor_pos = (0, 0)
+                lcd.write_string(f'Temp: {temperature:.1f}C')
+                lcd.cursor_pos = (1, 0)
+                lcd.write_string(f'Humi: {humidity:.1f}%')
+                
+                # ターミナルにも出力
+                print(f'Temperature: {temperature:.1f}°C, Humidity: {humidity:.1f}%')
+                
+            except RuntimeError as error:
+                # DHT22は読み取りエラーが発生することがある
+                print(f"Error: {error.args[0]}")
+                time.sleep(2.0)
+                continue
+            except Exception as e:
+                print(f"Unexpected error: {e}")
+                time.sleep(2.0)
+                continue
+            
+            # 2秒待機(DHT22は2秒以上の間隔が必要)
+            time.sleep(2.0)
+            
+    except KeyboardInterrupt:
+        print("\nプログラムを終了します")
+        lcd.clear()
+        lcd.write_string('Goodbye!')
+        time.sleep(1)
+        lcd.clear()
+    finally:
+        dht_device.exit()
+
+if __name__ == '__main__':
+    main()</code></pre>
+                </div>
+                
+                <div class="usage-note">
+                    <h4>🔧 使用方法</h4>
+                    <p>ステップ1: lgpioをインストール</p>
+                    <p>bashsudo apt-get install -y python3-lgpio</p>
+                    <p></p>
+                    <p>ステップ2: ファイル作成</p>
+                    <p>ファイル名 dht22_lcd.py</p>
+                    <p></p>
+                    <p>DHT22とI2C LCD1602をRaspberry Piに接続する配線と初期セットアップの手順をご説明します。</p>
+                    <p>必要な部品</p>
+                    <p></p>
+                    <p>Raspberry Pi（Raspberry Pi 4推奨）</p>
+                    <p>DHT22センサー</p>
+                    <p>I2C LCD1602ディスプレイ（PCF8574モジュール付き）</p>
+                    <p>ブレッドボード</p>
+                    <p>ジャンパーワイヤー（オス-オス、オス-メス）</p>
+                    <p>10kΩ抵抗（プルアップ用）</p>
+                    <p></p>
+                    <p>配線図</p>
+                    <p>DHT22の接続</p>
+                    <p>DHT22      → Raspberry Pi</p>
+                    <p>VCC(+)     → 3.3V (Pin 1)</p>
+                    <p>DATA       → GPIO27 (Pin 13)</p>
+                    <p>GND(-)     → GND (Pin 6)</p>
+                    <p>I2C LCD1602の接続</p>
+                    <p>LCD1602    → Raspberry Pi</p>
+                    <p>VCC        → 5V (Pin 2)</p>
+                    <p>GND        → GND (Pin 9)</p>
+                    <p>SDA        → SDA (GPIO2, Pin 3)</p>
+                    <p>SCL        → SCL (GPIO3, Pin 5)</p>
+                    <p>ブレッドボードでの配線手順</p>
+                    <p></p>
+                    <p>電源レールの準備</p>
+                    <p></p>
+                    <p>ブレッドボードの赤いレール（+）をRaspberry Piの5Vピン（Pin 2）に接続</p>
+                    <p>青いレール（-）をGNDピン（Pin 6）に接続</p>
+                    <p></p>
+                    <p></p>
+                    <p>DHT22の配線</p>
+                    <p></p>
+                    <p>DHT22のVCCを3.3V（Pin 1）に接続</p>
+                    <p>DHT22のDATAをGPIO27（Pin 13）に接続</p>
+                    <p>DHT22のGNDをGNDレールに接続</p>
+                    <p>重要: DHT22のVCCとDATAピンの間に10kΩ抵抗を接続（プルアップ抵抗）</p>
+                    <p></p>
+                    <p></p>
+                    <p>I2C LCD1602の配線</p>
+                    <p></p>
+                    <p>LCD VCCを5Vレールに接続</p>
+                    <p>LCD GNDをGNDレールに接続</p>
+                    <p>LCD SDAをRaspberry PiのSDA（GPIO2, Pin 3）に接続</p>
+                    <p>LCD SCLをRaspberry PiのSCL（GPIO3, Pin 5）に接続</p>
+                    <p></p>
+                    <p></p>
+                    <p></p>
+                    <p>初期セットアップ手順</p>
+                    <p>1. Raspberry Piの基本設定</p>
+                    <p>bash# システムアップデート</p>
+                    <p>sudo apt update && sudo apt upgrade -y</p>
+                    <p></p>
+                    <p># I2Cを有効化</p>
+                    <p>sudo raspi-config</p>
+                    <p># → Interface Options → I2C → Enable</p>
+                    <p>2. 必要なパッケージのインストール</p>
+                    <p>bash# Python開発ツール</p>
+                    <p>sudo apt install python3-pip python3-dev -y</p>
+                    <p></p>
+                    <p># I2C関連ツール</p>
+                    <p>sudo apt install i2c-tools -y</p>
+                    <p></p>
+                    <p># GPIO関連</p>
+                    <p>sudo apt install python3-gpiozero -y</p>
+                    <p>3. Pythonライブラリのインストール</p>
+                    <p>bash# 必要なライブラリをインストール</p>
+                    <p>pip3 install adafruit-circuitpython-dht</p>
+                    <p>pip3 install RPLCD</p>
+                    <p>pip3 install lgpio</p>
+                    <p>pip3 install adafruit-blinka</p>
+                    <p>4. I2C接続の確認</p>
+                    <p>bash# I2Cデバイスを検出</p>
+                    <p>sudo i2cdetect -y 1</p>
+                    <p>LCD1602が正しく接続されていれば、0x27のアドレスが表示されます。</p>
+                    <p>5. 権限設定</p>
+                    <p>bash# GPIOアクセス権限を追加</p>
+                    <p>sudo usermod -a -G gpio $USER</p>
+                    <p>sudo usermod -a -G i2c $USER</p>
+                    <p></p>
+                    <p># 再ログインまたは再起動</p>
+                    <p>sudo reboot</p>
+                    <p>トラブルシューティング</p>
+                    <p>DHT22関連</p>
+                    <p></p>
+                    <p>データが読み取れない場合：プルアップ抵抗（10kΩ）が正しく接続されているか確認</p>
+                    <p>エラーが頻発する場合：配線の接触不良をチェック</p>
+                    <p></p>
+                    <p>LCD1602関連</p>
+                    <p></p>
+                    <p>表示されない場合：</p>
+                    <p></p>
+                    <p>bash  sudo i2cdetect -y 1</p>
+                    <p>でアドレスを確認。0x3fの場合もあります</p>
+                    <p></p>
+                    <p>文字化けの場合：電源供給が不十分な可能性があります</p>
+                    <p></p>
+                    <p>実行前の最終チェック</p>
+                    <p>bash# GPIOの状態確認</p>
+                    <p>gpio readall</p>
+                    <p></p>
+                    <p># I2Cの動作確認</p>
+                    <p>sudo i2cdetect -y 1</p>
+                    <p>この手順で配線とセットアップを完了すれば、提供されたPythonコードが正常に動作するはずです。何か問題が発生した場合は、具体的なエラーメッセージをお知らせください。再試行</p>
+                    <p></p>
+                </div>
+            </div>
+            
+           
+            <!-- ========================================= -->
+            
+            
+            
+            <!-- 例: 距離センサーのサンプル（コメントアウト状態） -->
+            <!--
+            <div class="code-section">
+                <div class="code-title">📏 超音波距離センサー（HC-SR04）</div>
+                <div class="code-description">超音波で距離を測定するプログラムです。</div>
+                <div class="tag">中級</div>
+                <div class="tag">センサー</div>
+                <div class="tag">距離測定</div>
+                
+                <div class="code-container">
+                    <button class="copy-btn" onclick="copyCode(this, 'ultrasonic')">コピー</button>
+                    <pre><code id="ultrasonic" class="language-python">import RPi.GPIO as GPIO
+import time
+
+# ピンの設定
+TRIG = 23
+ECHO = 24
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(TRIG, GPIO.OUT)
+GPIO.setup(ECHO, GPIO.IN)
+
+def measure_distance():
+    # トリガーパルスを送信
+    GPIO.output(TRIG, True)
+    time.sleep(0.00001)
+    GPIO.output(TRIG, False)
+    
+    # エコーの開始時間を記録
+    while GPIO.input(ECHO) == 0:
+        start = time.time()
+    
+    # エコーの終了時間を記録
+    while GPIO.input(ECHO) == 1:
+        end = time.time()
+    
+    # 距離を計算
+    duration = end - start
+    distance = duration * 34300 / 2  # 音速: 343m/s
+    
+    return distance
+
+try:
+    while True:
+        dist = measure_distance()
+        print(f"距離: {dist:.1f} cm")
+        time.sleep(1)
+        
+except KeyboardInterrupt:
+    GPIO.cleanup()</code></pre>
+                </div>
+                
+                <div class="usage-note">
+                    <h4>🔧 接続方法</h4>
+                    <p>VCC→5V, GND→GND, Trig→GPIO23, Echo→GPIO24</p>
+                </div>
+            </div>
+            -->
+            
+        </div>
+        
+        <footer>
+            <p>🎓 愛媛県立西条農業高等学校 プログラミング教室</p>
+            <p>作成日: 2025年11月</p>
+        </footer>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script>
+        function copyCode(button, codeId) {
+            const code = document.getElementById(codeId).textContent;
+            
+            navigator.clipboard.writeText(code).then(function() {
+                // ボタンの表示を変更
+                button.textContent = 'コピー完了！';
+                button.classList.add('copied');
+                
+                // 2秒後に元に戻す
+                setTimeout(function() {
+                    button.textContent = 'コピー';
+                    button.classList.remove('copied');
+                }, 2000);
+                
+                // 成功メッセージを表示
+                showNotification('コードをコピーしました！');
+            }).catch(function(err) {
+                // フォールバック: テキスト選択
+                const range = document.createRange();
+                range.selectNode(document.getElementById(codeId));
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                
+                try {
+                    document.execCommand('copy');
+                    button.textContent = 'コピー完了！';
+                    button.classList.add('copied');
+                    
+                    setTimeout(function() {
+                        button.textContent = 'コピー';
+                        button.classList.remove('copied');
+                    }, 2000);
+                    
+                    showNotification('コードをコピーしました！');
+                } catch(e) {
+                    showNotification('コピーに失敗しました。手動で選択してコピーしてください。', true);
+                }
+                
+                window.getSelection().removeAllRanges();
+            });
+        }
+        
+        function showNotification(message, isError = false) {
+            // 通知要素を作成
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${isError ? '#e53e3e' : '#38a169'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 1000;
+                font-size: 14px;
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            // アニメーション用CSS
+            if (!document.getElementById('notification-styles')) {
+                const style = document.createElement('style');
+                style.id = 'notification-styles';
+                style.textContent = `
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOut {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(notification);
+            
+            // 3秒後に削除
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+        
+        // ページ読み込み後にシンタックスハイライトを適用
+        document.addEventListener('DOMContentLoaded', function() {
+            Prism.highlightAll();
+        });
+    </script>
+</body>
+</html>
