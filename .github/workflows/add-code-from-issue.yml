@@ -1,0 +1,131 @@
+name: 新しいコードをIssueから自動追加
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  add-code:
+    if: contains(github.event.issue.labels.*.name, '新規コード')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Issueの内容を解析してコードを追加
+        id: parse-issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const issue = context.payload.issue;
+            const body = issue.body;
+
+            // Issueからフィールドを抽出
+            function extractField(body, fieldName) {
+              const regex = new RegExp(`### ${fieldName}\\s+([\\s\\S]*?)(?=###|$)`, 'i');
+              const match = body.match(regex);
+              return match ? match[1].trim() : '';
+            }
+
+            const codeId = extractField(body, 'コードID');
+            const title = extractField(body, 'タイトル');
+            const description = extractField(body, '説明');
+            const difficulty = extractField(body, '難易度');
+            const tagsStr = extractField(body, 'タグ');
+            const filename = extractField(body, 'ファイル名');
+            const code = extractField(body, 'Pythonコード');
+            const connection = extractField(body, '接続方法');
+            const command = extractField(body, '実行コマンド');
+            const notes = extractField(body, '備考・注意事項');
+
+            // タグを配列に変換
+            const tags = tagsStr.split(',').map(tag => tag.trim()).filter(tag => tag);
+
+            // 新しいコードオブジェクト
+            const newCode = {
+              id: codeId,
+              title: title,
+              description: description,
+              difficulty: difficulty,
+              tags: tags,
+              filename: filename,
+              code: code,
+              setup: {
+                connection: connection,
+                command: command,
+                notes: notes
+              }
+            };
+
+            // codes.jsonを読み込む
+            let codesData;
+            try {
+              const codesJson = fs.readFileSync('codes.json', 'utf8');
+              codesData = JSON.parse(codesJson);
+            } catch (error) {
+              core.setFailed(`codes.jsonの読み込みに失敗: ${error.message}`);
+              return;
+            }
+
+            // IDの重複チェック
+            const isDuplicate = codesData.codes.some(code => code.id === codeId);
+            if (isDuplicate) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `❌ エラー: コードID「${codeId}」は既に存在します。別のIDを使用してください。`
+              });
+              core.setFailed('重複するコードIDが検出されました');
+              return;
+            }
+
+            // 新しいコードを追加
+            codesData.codes.push(newCode);
+
+            // codes.jsonに書き込む
+            fs.writeFileSync('codes.json', JSON.stringify(codesData, null, 2) + '\n');
+
+            console.log('新しいコードを追加しました:', codeId);
+
+            // 出力を設定
+            core.setOutput('code_id', codeId);
+            core.setOutput('code_title', title);
+
+      - name: 変更をコミット
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add codes.json
+          git commit -m "新しいコードを追加: ${{ steps.parse-issue.outputs.code_title }} (#${{ github.event.issue.number }})"
+
+      - name: 変更をプッシュ
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+
+      - name: Issueに成功メッセージを投稿
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `✅ コードが正常に追加されました！\n\n**コードID:** \`${{ steps.parse-issue.outputs.code_id }}\`\n**タイトル:** ${{ steps.parse-issue.outputs.code_title }}\n\nサイトに反映されるまで数分かかる場合があります。`
+            });
+
+            // Issueをクローズ
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed',
+              labels: ['新規コード', '✅ 完了']
+            });
