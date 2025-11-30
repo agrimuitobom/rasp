@@ -97,6 +97,23 @@
         "command": "python3 dht22_lcd.py",
         "notes": "セットアップ:\n1. sudo apt update && sudo apt upgrade -y\n2. sudo raspi-config (I2C有効化)\n3. sudo apt install python3-pip python3-dev i2c-tools python3-lgpio -y\n4. pip3 install adafruit-circuitpython-dht RPLCD lgpio adafruit-blinka\n5. sudo i2cdetect -y 1 (0x27確認)\n6. sudo usermod -a -G gpio,i2c $USER && sudo reboot"
       }
-    }
+    },
+    {
+  "id": "ultrasonic-sensor-LED",
+  "title": "超音波センサーで感知してLED点灯",
+  "description": "超音波センサーで感知してLED点灯させるシステムです。",
+  "difficulty": "中級",
+  "tags": [
+    "超音波センサー",
+    "LED"
+  ],
+  "filename": "ultrasonic-sensor_LED",
+  "code": "import RPi.GPIO as GPIO\nimport time\n\n# GPIOピンの設定\nTRIG = 23  # 超音波センサーのTRIGピン\nECHO = 24  # 超音波センサーのECHOピン\nLED = 18   # LEDのピン\n\n# GPIO初期設定\nGPIO.setmode(GPIO.BCM)\nGPIO.setup(TRIG, GPIO.OUT)\nGPIO.setup(ECHO, GPIO.IN)\nGPIO.setup(LED, GPIO.OUT)\n\ndef measure_distance():\n    \"\"\"超音波センサーで距離を測定する関数\"\"\"\n    # TRIGピンを10マイクロ秒間HIGHにして超音波を発射\n    GPIO.output(TRIG, True)\n    time.sleep(0.00001)\n    GPIO.output(TRIG, False)\n    \n    # ECHOピンがHIGHになるまで待つ\n    while GPIO.input(ECHO) == 0:\n        pulse_start = time.time()\n    \n    # ECHOピンがLOWになるまで待つ\n    while GPIO.input(ECHO) == 1:\n        pulse_end = time.time()\n    \n    # 距離を計算(音速340m/s、往復なので2で割る)\n    pulse_duration = pulse_end - pulse_start\n    distance = pulse_duration * 17150\n    distance = round(distance, 2)\n    \n    return distance\n\ntry:\n    print(\"超音波センサー距離測定システム開始\")\n    print(\"20cm以内に物体が来るとLEDが光ります\")\n    print(\"終了するにはCtrl+Cを押してください\")\n    \n    while True:\n        dist = measure_distance()\n        print(f\"距離: {dist} cm\")\n        \n        # 20cm以内に物体があればLEDを点灯\n        if dist <= 20:\n            GPIO.output(LED, True)\n            print(\"→ LEDオン!\")\n        else:\n            GPIO.output(LED, False)\n        \n        time.sleep(0.5)  # 0.5秒ごとに測定\n\nexcept KeyboardInterrupt:\n    print(\"\\nプログラムを終了します\")\n    \nfinally:\n    GPIO.cleanup()  # GPIOピンをクリーンアップ",
+  "setup": {
+    "connection": "接続方法:\n超音波センサー(HC-SR04):\n\nVCC → ラズパイの5V電源\nGND → ラズパイのGND\nTRIG → GPIO 23\nECHO → GPIO 24(※1kΩと2kΩの抵抗で分圧回路を作ってください)\n\nLED:\n\nLED(+) → GPIO 18 → 330Ω抵抗 → LED\nLED(-) → GND\n\n重要な注意点:\n\nECHOピンには必ず分圧回路が必要です - 超音波センサーは5V出力ですが、ラズパイは3.3V入力のため、分圧しないと壊れる可能性があります\nLEDには必ず抵抗(330Ω程度)を直列に接続してください。\n\nなぜ分圧回路が必要なのか\n超音波センサー(HC-SR04)のECHOピンは5Vの信号を出力しますが、ラズパイのGPIOピンは3.3Vまでしか耐えられません。5Vをそのまま入れるとラズパイが壊れる可能性があります。\nそこで、抵抗を使って5Vを3.3V程度に下げる「分圧回路」が必要です。\n分圧回路の配線方法\n超音波センサー(ECHO) \n    |\n    |--- 1kΩ抵抗 ---+--- ラズパイ GPIO 24\n                     |\n                     |--- 2kΩ抵抗 --- GND\n具体的な接続手順:\n\n超音波センサーのECHOピン から線を出す\nその線に 1kΩ抵抗 を接続\n1kΩ抵抗のもう一方から2つに分岐:\n\n一方を ラズパイのGPIO 24 に接続\nもう一方に 2kΩ抵抗 を接続\n\n\n2kΩ抵抗のもう一方を GND に接続\n\n計算式\n分圧の計算式:\n出力電圧 = 入力電圧 × (R2 / (R1 + R2))\n        = 5V × (2kΩ / (1kΩ + 2kΩ))\n        = 5V × (2/3)\n        = 3.33V",
+    "command": "python3",
+    "notes": "電圧を下げないとラズパイが壊れるので細心の注意を払ってください。"
+  }
+},
   ]
 }
