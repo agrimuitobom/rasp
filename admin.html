@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>コード管理画面 - ラズパイプログラミング</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #718096;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #2d3748;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            font-family: 'Courier New', monospace;
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        .tag-input-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .tag-chip {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tag-chip button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0;
+            margin-left: 5px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .btn-secondary {
+            background: #cbd5e0;
+            color: #2d3748;
+        }
+
+        .btn-secondary:hover {
+            background: #a0aec0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .preview-section {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .preview-section h2 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+
+        .instructions {
+            background: #ebf8ff;
+            border-left: 4px solid #3182ce;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+
+        .instructions h3 {
+            color: #2c5282;
+            margin-bottom: 10px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+            color: #2d3748;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #c6f6d5;
+            border: 1px solid #48bb78;
+            color: #22543d;
+        }
+
+        .alert-info {
+            background: #bee3f8;
+            border: 1px solid #3182ce;
+            color: #2c5282;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 コード管理画面</h1>
+        <p class="subtitle">新しいラズパイコードを追加する</p>
+
+        <div class="alert alert-info">
+            <strong>📝 このページの使い方:</strong><br>
+            フォームに情報を入力して、「JSONを生成」ボタンを押してください。生成されたJSONをcodes.jsonファイルに追加します。
+        </div>
+
+        <form id="codeForm">
+            <div class="form-group">
+                <label for="id">ID (英数字、ハイフンのみ) *</label>
+                <input type="text" id="id" required placeholder="例: ultrasonic-sensor">
+            </div>
+
+            <div class="form-group">
+                <label for="title">タイトル (絵文字付き推奨) *</label>
+                <input type="text" id="title" required placeholder="例: 📏 超音波距離センサー">
+            </div>
+
+            <div class="form-group">
+                <label for="description">説明 *</label>
+                <textarea id="description" required placeholder="このコードの説明を入力してください"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="difficulty">難易度 *</label>
+                <select id="difficulty" required>
+                    <option value="">選択してください</option>
+                    <option value="初級">初級</option>
+                    <option value="中級">中級</option>
+                    <option value="上級">上級</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>タグ *</label>
+                <div class="tag-input-container" id="tagContainer"></div>
+                <input type="text" id="tagInput" placeholder="タグを入力してEnterキーを押す (例: センサー, IoT)">
+            </div>
+
+            <div class="form-group">
+                <label for="filename">ファイル名 *</label>
+                <input type="text" id="filename" required placeholder="例: ultrasonic_sensor.py">
+            </div>
+
+            <div class="form-group">
+                <label for="code">Pythonコード *</label>
+                <textarea id="code" required placeholder="import RPi.GPIO as GPIO
+..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="connection">接続方法</label>
+                <textarea id="connection" rows="3" placeholder="例: VCC→5V, GND→GND, Trig→GPIO23"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="command">実行コマンド *</label>
+                <input type="text" id="command" required value="python3 " placeholder="例: python3 ultrasonic_sensor.py">
+            </div>
+
+            <div class="form-group">
+                <label for="notes">備考・注意事項</label>
+                <textarea id="notes" rows="3" placeholder="セットアップ手順やトラブルシューティングなど"></textarea>
+            </div>
+
+            <div class="button-group">
+                <button type="button" class="btn btn-primary" onclick="generateJSON()">📝 JSONを生成</button>
+                <button type="button" class="btn btn-secondary" onclick="resetForm()">🔄 リセット</button>
+            </div>
+        </form>
+
+        <div class="preview-section" id="previewSection" style="display: none;">
+            <h2>生成されたJSON</h2>
+            <pre id="jsonOutput"></pre>
+            <div class="button-group">
+                <button class="btn btn-success" onclick="downloadJSON()">💾 JSONをダウンロード</button>
+                <button class="btn btn-secondary" onclick="copyJSON()">📋 クリップボードにコピー</button>
+            </div>
+
+            <div class="instructions">
+                <h3>📚 次のステップ</h3>
+                <ol>
+                    <li>上記の「JSONをダウンロード」ボタンをクリック</li>
+                    <li>ダウンロードした <code>new_code.json</code> ファイルを開く</li>
+                    <li><code>codes.json</code> ファイルを開いて、<code>"codes"</code> 配列の最後に追加
+                        <br>※最後のコードの後に<code>,</code>（カンマ）を忘れずに！</li>
+                    <li>GitHubにコミット＆プッシュ</li>
+                    <li>サイトを更新して確認！</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tags = [];
+
+        // タグ入力の処理
+        document.getElementById('tagInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const tagValue = this.value.trim();
+                if (tagValue && !tags.includes(tagValue)) {
+                    tags.push(tagValue);
+                    updateTagDisplay();
+                    this.value = '';
+                }
+            }
+        });
+
+        function updateTagDisplay() {
+            const container = document.getElementById('tagContainer');
+            container.innerHTML = '';
+            tags.forEach((tag, index) => {
+                const chip = document.createElement('div');
+                chip.className = 'tag-chip';
+                chip.innerHTML = `
+                    ${tag}
+                    <button onclick="removeTag(${index})" type="button">×</button>
+                `;
+                container.appendChild(chip);
+            });
+        }
+
+        function removeTag(index) {
+            tags.splice(index, 1);
+            updateTagDisplay();
+        }
+
+        function generateJSON() {
+            // フォームのバリデーション
+            const form = document.getElementById('codeForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            if (tags.length === 0) {
+                alert('少なくとも1つのタグを追加してください');
+                return;
+            }
+
+            const codeData = {
+                id: document.getElementById('id').value.trim(),
+                title: document.getElementById('title').value.trim(),
+                description: document.getElementById('description').value.trim(),
+                difficulty: document.getElementById('difficulty').value,
+                tags: tags,
+                filename: document.getElementById('filename').value.trim(),
+                code: document.getElementById('code').value,
+                setup: {
+                    connection: document.getElementById('connection').value.trim(),
+                    command: document.getElementById('command').value.trim(),
+                    notes: document.getElementById('notes').value.trim()
+                }
+            };
+
+            // JSONを整形して表示
+            const jsonString = JSON.stringify(codeData, null, 2);
+            document.getElementById('jsonOutput').textContent = jsonString;
+            document.getElementById('previewSection').style.display = 'block';
+
+            // プレビューセクションまでスクロール
+            document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function downloadJSON() {
+            const jsonContent = document.getElementById('jsonOutput').textContent;
+            const blob = new Blob([jsonContent], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'new_code.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            // 成功メッセージ
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success';
+            alertDiv.textContent = '✅ JSONファイルをダウンロードしました！';
+            document.getElementById('previewSection').insertBefore(
+                alertDiv,
+                document.getElementById('previewSection').firstChild
+            );
+            setTimeout(() => alertDiv.remove(), 3000);
+        }
+
+        function copyJSON() {
+            const jsonContent = document.getElementById('jsonOutput').textContent;
+            navigator.clipboard.writeText(jsonContent).then(() => {
+                // 成功メッセージ
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success';
+                alertDiv.textContent = '✅ クリップボードにコピーしました！';
+                document.getElementById('previewSection').insertBefore(
+                    alertDiv,
+                    document.getElementById('previewSection').firstChild
+                );
+                setTimeout(() => alertDiv.remove(), 3000);
+            });
+        }
+
+        function resetForm() {
+            if (confirm('フォームをリセットしますか？入力した内容は失われます。')) {
+                document.getElementById('codeForm').reset();
+                tags = [];
+                updateTagDisplay();
+                document.getElementById('previewSection').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
