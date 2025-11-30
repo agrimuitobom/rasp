@@ -1,0 +1,102 @@
+{
+  "codes": [
+    {
+      "id": "led-blink",
+      "title": "🔴 LED点滅プログラム",
+      "description": "基本的なLED制御プログラムです。GPIO18ピンに接続したLEDが1秒間隔で点滅します。",
+      "difficulty": "初級",
+      "tags": ["GPIO", "LED"],
+      "filename": "led_blink.py",
+      "code": "import RPi.GPIO as GPIO\nimport time\n\n# GPIOの設定\nGPIO.setmode(GPIO.BCM)\nGPIO.setup(18, GPIO.OUT)\n\nprint(\"LED点滅開始！Ctrl+Cで停止\")\n\ntry:\n    while True:\n        GPIO.output(18, GPIO.HIGH)  # LED点灯\n        print(\"LED ON\")\n        time.sleep(1)\n        \n        GPIO.output(18, GPIO.LOW)   # LED消灯\n        print(\"LED OFF\")\n        time.sleep(1)\n        \nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")\n    \nfinally:\n    GPIO.cleanup()  # GPIOをクリーンアップ\n    print(\"GPIO cleanup完了\")",
+      "setup": {
+        "connection": "GPIO18 → LED+ → 抵抗(220Ω) → GND",
+        "command": "python3 led_blink.py",
+        "notes": ""
+      }
+    },
+    {
+      "id": "button-led",
+      "title": "🔲 ボタン入力プログラム",
+      "description": "ボタンを押すとLEDが点灯するプログラムです。プルアップ抵抗を使用します。",
+      "difficulty": "初級",
+      "tags": ["GPIO", "ボタン"],
+      "filename": "button_led.py",
+      "code": "import RPi.GPIO as GPIO\nimport time\n\n# GPIOの設定\nGPIO.setmode(GPIO.BCM)\nGPIO.setup(18, GPIO.OUT)    # LED用\nGPIO.setup(2, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # ボタン用\n\nprint(\"ボタンでLED制御開始！Ctrl+Cで停止\")\nprint(\"ボタンを押してください\")\n\ntry:\n    while True:\n        if GPIO.input(2) == GPIO.LOW:  # ボタンが押された\n            GPIO.output(18, GPIO.HIGH)  # LED点灯\n            print(\"ボタンが押されました - LED ON\")\n        else:\n            GPIO.output(18, GPIO.LOW)   # LED消灯\n        \n        time.sleep(0.1)  # CPUの負荷を軽減\n        \nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")\n    \nfinally:\n    GPIO.cleanup()\n    print(\"GPIO cleanup完了\")",
+      "setup": {
+        "connection": "GPIO2 → ボタン → GND\nGPIO18 → LED+ → 抵抗(220Ω) → GND",
+        "command": "python3 button_led.py",
+        "notes": ""
+      }
+    },
+    {
+      "id": "dht22",
+      "title": "🌡️ 温湿度センサー（DHT22）",
+      "description": "DHT22センサーで温度と湿度を測定するプログラムです。農業IoTの基本となります。",
+      "difficulty": "中級",
+      "tags": ["センサー", "IoT"],
+      "filename": "dht22.py",
+      "code": "import Adafruit_DHT\nimport time\nfrom datetime import datetime\n\n# センサーの設定\nsensor = Adafruit_DHT.DHT22\npin = 4  # GPIO4に接続\n\nprint(\"温湿度測定開始！Ctrl+Cで停止\")\n\ntry:\n    while True:\n        # センサーから値を読み取り\n        humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)\n        \n        # 現在時刻を取得\n        now = datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\")\n        \n        if humidity is not None and temperature is not None:\n            print(f\"{now} - 温度: {temperature:.1f}°C, 湿度: {humidity:.1f}%\")\n        else:\n            print(f\"{now} - センサーの読み取りに失敗しました\")\n        \n        time.sleep(2)  # 2秒間隔で測定\n        \nexcept KeyboardInterrupt:\n    print(\"\\n測定を停止しました\")",
+      "setup": {
+        "connection": "VCC→3.3V, GND→GND, DATA→GPIO4",
+        "command": "python3 dht22.py",
+        "notes": "ライブラリインストール: pip3 install Adafruit_DHT"
+      }
+    },
+    {
+      "id": "led-pattern",
+      "title": "🎨 LEDパターン制御",
+      "description": "複数のLEDを使って様々なパターンで点滅させるプログラムです。",
+      "difficulty": "中級",
+      "tags": ["GPIO", "パターン", "LED"],
+      "filename": "led_pattern.py",
+      "code": "import RPi.GPIO as GPIO\nimport time\n\n# GPIOの設定\nGPIO.setmode(GPIO.BCM)\nled_pins = [18, 19, 20, 21]  # 4つのLEDピン\n\n# 全てのピンを出力として設定\nfor pin in led_pins:\n    GPIO.setup(pin, GPIO.OUT)\n    GPIO.output(pin, GPIO.LOW)\n\ndef pattern_1():\n    \"\"\"順番に点灯\"\"\"\n    for pin in led_pins:\n        GPIO.output(pin, GPIO.HIGH)\n        time.sleep(0.3)\n        GPIO.output(pin, GPIO.LOW)\n\ndef pattern_2():\n    \"\"\"全点滅\"\"\"\n    for pin in led_pins:\n        GPIO.output(pin, GPIO.HIGH)\n    time.sleep(0.5)\n    for pin in led_pins:\n        GPIO.output(pin, GPIO.LOW)\n    time.sleep(0.5)\n\ndef pattern_3():\n    \"\"\"左右から中央へ\"\"\"\n    GPIO.output(18, GPIO.HIGH)\n    GPIO.output(21, GPIO.HIGH)\n    time.sleep(0.3)\n    GPIO.output(19, GPIO.HIGH)\n    GPIO.output(20, GPIO.HIGH)\n    time.sleep(0.3)\n    for pin in led_pins:\n        GPIO.output(pin, GPIO.LOW)\n    time.sleep(0.3)\n\nprint(\"LEDパターン制御開始！Ctrl+Cで停止\")\n\ntry:\n    pattern = 1\n    while True:\n        print(f\"パターン {pattern}\")\n        \n        if pattern == 1:\n            pattern_1()\n        elif pattern == 2:\n            pattern_2()\n        else:\n            pattern_3()\n        \n        pattern = (pattern % 3) + 1  # 1,2,3を循環\n        time.sleep(0.5)\n        \nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")\n    \nfinally:\n    GPIO.cleanup()\n    print(\"GPIO cleanup完了\")",
+      "setup": {
+        "connection": "GPIO18, 19, 20, 21 → 各LED+ → 抵抗(220Ω) → GND",
+        "command": "python3 led_pattern.py",
+        "notes": ""
+      }
+    },
+    {
+      "id": "pwm-led",
+      "title": "🔆 PWM制御（LED調光）",
+      "description": "PWMを使ってLEDの明るさを段階的に変化させるプログラムです。",
+      "difficulty": "中級",
+      "tags": ["PWM", "調光", "LED"],
+      "filename": "pwm_led.py",
+      "code": "import RPi.GPIO as GPIO\nimport time\n\n# GPIOの設定\nGPIO.setmode(GPIO.BCM)\nGPIO.setup(18, GPIO.OUT)\n\n# PWMオブジェクトを作成（1000Hz）\npwm = GPIO.PWM(18, 1000)\npwm.start(0)  # 0%の明るさから開始\n\nprint(\"PWM LED制御開始！Ctrl+Cで停止\")\nprint(\"LEDが明暗を繰り返します\")\n\ntry:\n    while True:\n        # 明るくなる（0% → 100%）\n        print(\"明るくなっています...\")\n        for duty_cycle in range(0, 101, 2):\n            pwm.ChangeDutyCycle(duty_cycle)\n            time.sleep(0.05)\n        \n        time.sleep(0.5)\n        \n        # 暗くなる（100% → 0%）\n        print(\"暗くなっています...\")\n        for duty_cycle in range(100, -1, -2):\n            pwm.ChangeDutyCycle(duty_cycle)\n            time.sleep(0.05)\n        \n        time.sleep(0.5)\n        \nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")\n    \nfinally:\n    pwm.stop()\n    GPIO.cleanup()\n    print(\"PWM停止、GPIO cleanup完了\")",
+      "setup": {
+        "connection": "GPIO18 → LED+ → 抵抗(220Ω) → GND",
+        "command": "python3 pwm_led.py",
+        "notes": ""
+      }
+    },
+    {
+      "id": "servo",
+      "title": "🔄 サーボモーター制御",
+      "description": "PWMでサーボモーターを制御するプログラムです。角度指定で回転させます。",
+      "difficulty": "中級",
+      "tags": ["サーボ", "PWM"],
+      "filename": "servo_control.py",
+      "code": "import RPi.GPIO as GPIO\nimport time\n\n# GPIOの設定\nGPIO.setmode(GPIO.BCM)\nGPIO.setup(18, GPIO.OUT)\n\n# PWMオブジェクトを作成（50Hz）\nservo = GPIO.PWM(18, 50)\nservo.start(0)\n\ndef set_angle(angle):\n    \"\"\"角度を指定してサーボを動かす\"\"\"\n    duty_cycle = 2 + (angle / 18)\n    servo.ChangeDutyCycle(duty_cycle)\n    time.sleep(0.5)\n    servo.ChangeDutyCycle(0)  # 信号停止でジッターを防ぐ\n\nprint(\"サーボモーター制御開始！Ctrl+Cで停止\")\nprint(\"サーボが0度、90度、180度を繰り返します\")\n\ntry:\n    while True:\n        print(\"0度に移動\")\n        set_angle(0)\n        time.sleep(1)\n        \n        print(\"90度に移動\")\n        set_angle(90)\n        time.sleep(1)\n        \n        print(\"180度に移動\")\n        set_angle(180)\n        time.sleep(1)\n        \n        print(\"90度に戻る\")\n        set_angle(90)\n        time.sleep(1)\n        \nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")\n    \nfinally:\n    servo.stop()\n    GPIO.cleanup()\n    print(\"サーボ停止、GPIO cleanup完了\")",
+      "setup": {
+        "connection": "赤線→5V, 茶線→GND, オレンジ線→GPIO18",
+        "command": "python3 servo_control.py",
+        "notes": "※5V電源で動作させてください"
+      }
+    },
+    {
+      "id": "dht22-lcd",
+      "title": "🌡️📺 DHT22とディスプレイを使ったプログラム",
+      "description": "DHT22で取得した温湿度データをLCD1602ディスプレイに表示させるプログラムです。",
+      "difficulty": "中級",
+      "tags": ["センサー", "IoT", "ディスプレイ", "LCD"],
+      "filename": "dht22_lcd.py",
+      "code": "#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\n\nimport time\nimport board\nimport adafruit_dht\nfrom RPLCD.i2c import CharLCD\nimport os\n\n# lgpioを使用するように環境変数を設定\nos.environ['BLINKA_USE_LGPIO'] = '1'\n\n# DHT22センサーの初期化(GPIO27を使用)\ndht_device = adafruit_dht.DHT22(board.D27, use_pulseio=False)\n\n# LCD1602の初期化(アドレス0x27)\nlcd = CharLCD('PCF8574', 0x27, cols=16, rows=2)\n\ndef main():\n    try:\n        lcd.clear()\n        lcd.cursor_pos = (0, 0)\n        lcd.write_string('DHT22 Sensor')\n        time.sleep(2)\n        \n        while True:\n            try:\n                # 温度と湿度を取得\n                temperature = dht_device.temperature\n                humidity = dht_device.humidity\n                \n                # LCDに表示\n                lcd.clear()\n                lcd.cursor_pos = (0, 0)\n                lcd.write_string(f'Temp: {temperature:.1f}C')\n                lcd.cursor_pos = (1, 0)\n                lcd.write_string(f'Humi: {humidity:.1f}%')\n                \n                # ターミナルにも出力\n                print(f'Temperature: {temperature:.1f}°C, Humidity: {humidity:.1f}%')\n                \n            except RuntimeError as error:\n                # DHT22は読み取りエラーが発生することがある\n                print(f\"Error: {error.args[0]}\")\n                time.sleep(2.0)\n                continue\n            except Exception as e:\n                print(f\"Unexpected error: {e}\")\n                time.sleep(2.0)\n                continue\n            \n            # 2秒待機(DHT22は2秒以上の間隔が必要)\n            time.sleep(2.0)\n            \n    except KeyboardInterrupt:\n        print(\"\\nプログラムを終了します\")\n        lcd.clear()\n        lcd.write_string('Goodbye!')\n        time.sleep(1)\n        lcd.clear()\n    finally:\n        dht_device.exit()\n\nif __name__ == '__main__':\n    main()",
+      "setup": {
+        "connection": "DHT22: VCC→3.3V, DATA→GPIO27, GND→GND (10kΩプルアップ抵抗)\nLCD1602: VCC→5V, GND→GND, SDA→GPIO2, SCL→GPIO3",
+        "command": "python3 dht22_lcd.py",
+        "notes": "セットアップ:\n1. sudo apt update && sudo apt upgrade -y\n2. sudo raspi-config (I2C有効化)\n3. sudo apt install python3-pip python3-dev i2c-tools python3-lgpio -y\n4. pip3 install adafruit-circuitpython-dht RPLCD lgpio adafruit-blinka\n5. sudo i2cdetect -y 1 (0x27確認)\n6. sudo usermod -a -G gpio,i2c $USER && sudo reboot"
+      }
+    }
+  ]
+}
