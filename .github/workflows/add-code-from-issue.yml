@@ -2,11 +2,12 @@ name: 新しいコードをIssueから自動追加
 
 on:
   issues:
-    types: [opened]
+    types: [opened, labeled]
 
 jobs:
   add-code:
-    if: contains(github.event.issue.labels.*.name, '新規コード')
+    # Issueテンプレートのタイトルが "[新規コード]" で始まる場合に実行
+    if: startsWith(github.event.issue.title, '[新規コード]')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -43,6 +44,18 @@ jobs:
             const command = extractField(body, '実行コマンド');
             const notes = extractField(body, '備考・注意事項');
 
+            // バリデーション
+            if (!codeId || !title || !code) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `❌ エラー: 必須フィールド（コードID、タイトル、Pythonコード）が入力されていません。`
+              });
+              core.setFailed('必須フィールドが不足しています');
+              return;
+            }
+
             // タグを配列に変換
             const tags = tagsStr.split(',').map(tag => tag.trim()).filter(tag => tag);
 
@@ -73,7 +86,7 @@ jobs:
             }
 
             // IDの重複チェック
-            const isDuplicate = codesData.codes.some(code => code.id === codeId);
+            const isDuplicate = codesData.codes.some(c => c.id === codeId);
             if (isDuplicate) {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
@@ -92,25 +105,19 @@ jobs:
             fs.writeFileSync('codes.json', JSON.stringify(codesData, null, 2) + '\n');
 
             console.log('新しいコードを追加しました:', codeId);
-
-            // 出力を設定
             core.setOutput('code_id', codeId);
             core.setOutput('code_title', title);
 
-      - name: 変更をコミット
+      - name: 変更をコミット&プッシュ
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add codes.json
           git commit -m "新しいコードを追加: ${{ steps.parse-issue.outputs.code_title }} (#${{ github.event.issue.number }})"
+          git push
 
-      - name: 変更をプッシュ
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
-
-      - name: Issueに成功メッセージを投稿
+      - name: Issueに成功メッセージを投稿してクローズ
+        if: success()
         uses: actions/github-script@v7
         with:
           script: |
@@ -118,14 +125,36 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: `✅ コードが正常に追加されました！\n\n**コードID:** \`${{ steps.parse-issue.outputs.code_id }}\`\n**タイトル:** ${{ steps.parse-issue.outputs.code_title }}\n\nサイトに反映されるまで数分かかる場合があります。`
+              body: [
+                '✅ コードが正常に追加されました！',
+                '',
+                `**コードID:** \`${{ steps.parse-issue.outputs.code_id }}\``,
+                `**タイトル:** ${{ steps.parse-issue.outputs.code_title }}`,
+                '',
+                'サイトを更新すると新しいコードが表示されます！'
+              ].join('\n')
             });
 
-            // Issueをクローズ
             await github.rest.issues.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              state: 'closed',
-              labels: ['新規コード', '✅ 完了']
+              state: 'closed'
+            });
+
+      - name: エラー時にIssueにコメント
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: [
+                '❌ コードの追加に失敗しました。',
+                '',
+                'GitHubのActionsタブでエラーの詳細を確認してください。',
+                '入力内容を確認して、Issueを再作成してください。'
+              ].join('\n')
             });
