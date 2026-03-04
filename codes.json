@@ -5,7 +5,10 @@
       "title": "🔴 LED点滅プログラム",
       "description": "基本的なLED制御プログラムです。GPIO18ピンに接続したLEDが1秒間隔で点滅します。",
       "difficulty": "初級",
-      "tags": ["GPIO", "LED"],
+      "tags": [
+        "GPIO",
+        "LED"
+      ],
       "filename": "led_blink.py",
       "code": "import RPi.GPIO as GPIO\nimport time\n\n# GPIOの設定\nGPIO.setmode(GPIO.BCM)\nGPIO.setup(18, GPIO.OUT)\n\nprint(\"LED点滅開始!Ctrl+Cで停止\")\n\ntry:\n    while True:\n        GPIO.output(18, GPIO.HIGH)  # LED点灯\n        print(\"LED ON\")\n        time.sleep(1)\n        \n        GPIO.output(18, GPIO.LOW)   # LED消灯\n        print(\"LED OFF\")\n        time.sleep(1)\n        \nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")\n    \nfinally:\n    GPIO.cleanup()  # GPIOをクリーンアップ\n    print(\"GPIO cleanup完了\")",
       "setup": {
@@ -19,7 +22,10 @@
       "title": "🔲 ボタン入力プログラム",
       "description": "ボタンを押すとLEDが点灯するプログラムです。プルアップ抵抗を使用します。",
       "difficulty": "初級",
-      "tags": ["GPIO", "ボタン"],
+      "tags": [
+        "GPIO",
+        "ボタン"
+      ],
       "filename": "button_led.py",
       "code": "import RPi.GPIO as GPIO\nimport time\n\n# GPIOの設定\nGPIO.setmode(GPIO.BCM)\nGPIO.setup(18, GPIO.OUT)    # LED用\nGPIO.setup(2, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # ボタン用\n\nprint(\"ボタンでLED制御開始!Ctrl+Cで停止\")\nprint(\"ボタンを押してください\")\n\ntry:\n    while True:\n        if GPIO.input(2) == GPIO.LOW:  # ボタンが押された\n            GPIO.output(18, GPIO.HIGH)  # LED点灯\n            print(\"ボタンが押されました - LED ON\")\n        else:\n            GPIO.output(18, GPIO.LOW)   # LED消灯\n        \n        time.sleep(0.1)  # CPUの負荷を軽減\n        \nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")\n    \nfinally:\n    GPIO.cleanup()\n    print(\"GPIO cleanup完了\")",
       "setup": {
@@ -33,7 +39,10 @@
       "title": "🌡️ 温湿度センサー(DHT22)",
       "description": "DHT22センサーで温度と湿度を測定するプログラムです。農業IoTの基本となります。",
       "difficulty": "中級",
-      "tags": ["センサー", "IoT"],
+      "tags": [
+        "センサー",
+        "IoT"
+      ],
       "filename": "dht22.py",
       "code": "import Adafruit_DHT\nimport time\nfrom datetime import datetime\n\n# センサーの設定\nsensor = Adafruit_DHT.DHT22\npin = 4  # GPIO4に接続\n\nprint(\"温湿度測定開始!Ctrl+Cで停止\")\n\ntry:\n    while True:\n        # センサーから値を読み取り\n        humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)\n        \n        # 現在時刻を取得\n        now = datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\")\n        \n        if humidity is not None and temperature is not None:\n            print(f\"{now} - 温度: {temperature:.1f}°C, 湿度: {humidity:.1f}%\")\n        else:\n            print(f\"{now} - センサーの読み取りに失敗しました\")\n        \n        time.sleep(2)  # 2秒間隔で測定\n        \nexcept KeyboardInterrupt:\n    print(\"\\n測定を停止しました\")",
       "setup": {
@@ -47,7 +56,11 @@
       "title": "🎨 LEDパターン制御",
       "description": "複数のLEDを使って様々なパターンで点滅させるプログラムです。",
       "difficulty": "中級",
-      "tags": ["GPIO", "パターン", "LED"],
+      "tags": [
+        "GPIO",
+        "パターン",
+        "LED"
+      ],
       "filename": "led_pattern.py",
       "code": "import RPi.GPIO as GPIO\nimport time\n\n# GPIOの設定\nGPIO.setmode(GPIO.BCM)\nled_pins = [18, 19, 20, 21]  # 4つのLEDピン\n\n# 全てのピンを出力として設定\nfor pin in led_pins:\n    GPIO.setup(pin, GPIO.OUT)\n    GPIO.output(pin, GPIO.LOW)\n\ndef pattern_1():\n    \"\"\"順番に点灯\"\"\"\n    for pin in led_pins:\n        GPIO.output(pin, GPIO.HIGH)\n        time.sleep(0.3)\n        GPIO.output(pin, GPIO.LOW)\n\ndef pattern_2():\n    \"\"\"全点滅\"\"\"\n    for pin in led_pins:\n        GPIO.output(pin, GPIO.HIGH)\n    time.sleep(0.5)\n    for pin in led_pins:\n        GPIO.output(pin, GPIO.LOW)\n    time.sleep(0.5)\n\ndef pattern_3():\n    \"\"\"左右から中央へ\"\"\"\n    GPIO.output(18, GPIO.HIGH)\n    GPIO.output(21, GPIO.HIGH)\n    time.sleep(0.3)\n    GPIO.output(19, GPIO.HIGH)\n    GPIO.output(20, GPIO.HIGH)\n    time.sleep(0.3)\n    for pin in led_pins:\n        GPIO.output(pin, GPIO.LOW)\n    time.sleep(0.3)\n\nprint(\"LEDパターン制御開始!Ctrl+Cで停止\")\n\ntry:\n    pattern = 1\n    while True:\n        print(f\"パターン {pattern}\")\n        \n        if pattern == 1:\n            pattern_1()\n        elif pattern == 2:\n            pattern_2()\n        else:\n            pattern_3()\n        \n        pattern = (pattern % 3) + 1  # 1,2,3を循環\n        time.sleep(0.5)\n        \nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")\n    \nfinally:\n    GPIO.cleanup()\n    print(\"GPIO cleanup完了\")",
       "setup": {
@@ -61,7 +74,11 @@
       "title": "🔆 PWM制御(LED調光)",
       "description": "PWMを使ってLEDの明るさを段階的に変化させるプログラムです。",
       "difficulty": "中級",
-      "tags": ["PWM", "調光", "LED"],
+      "tags": [
+        "PWM",
+        "調光",
+        "LED"
+      ],
       "filename": "pwm_led.py",
       "code": "import RPi.GPIO as GPIO\nimport time\n\n# GPIOの設定\nGPIO.setmode(GPIO.BCM)\nGPIO.setup(18, GPIO.OUT)\n\n# PWMオブジェクトを作成(1000Hz)\npwm = GPIO.PWM(18, 1000)\npwm.start(0)  # 0%の明るさから開始\n\nprint(\"PWM LED制御開始!Ctrl+Cで停止\")\nprint(\"LEDが明暗を繰り返します\")\n\ntry:\n    while True:\n        # 明るくなる(0% → 100%)\n        print(\"明るくなっています...\")\n        for duty_cycle in range(0, 101, 2):\n            pwm.ChangeDutyCycle(duty_cycle)\n            time.sleep(0.05)\n        \n        time.sleep(0.5)\n        \n        # 暗くなる(100% → 0%)\n        print(\"暗くなっています...\")\n        for duty_cycle in range(100, -1, -2):\n            pwm.ChangeDutyCycle(duty_cycle)\n            time.sleep(0.05)\n        \n        time.sleep(0.5)\n        \nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")\n    \nfinally:\n    pwm.stop()\n    GPIO.cleanup()\n    print(\"PWM停止、GPIO cleanup完了\")",
       "setup": {
@@ -75,7 +92,10 @@
       "title": "🔄 サーボモーター制御",
       "description": "PWMでサーボモーターを制御するプログラムです。角度指定で回転させます。",
       "difficulty": "中級",
-      "tags": ["サーボ", "PWM"],
+      "tags": [
+        "サーボ",
+        "PWM"
+      ],
       "filename": "servo_control.py",
       "code": "import RPi.GPIO as GPIO\nimport time\n\n# GPIOの設定\nGPIO.setmode(GPIO.BCM)\nGPIO.setup(18, GPIO.OUT)\n\n# PWMオブジェクトを作成(50Hz)\nservo = GPIO.PWM(18, 50)\nservo.start(0)\n\ndef set_angle(angle):\n    \"\"\"角度を指定してサーボを動かす\"\"\"\n    duty_cycle = 2 + (angle / 18)\n    servo.ChangeDutyCycle(duty_cycle)\n    time.sleep(0.5)\n    servo.ChangeDutyCycle(0)  # 信号停止でジッターを防ぐ\n\nprint(\"サーボモーター制御開始!Ctrl+Cで停止\")\nprint(\"サーボが0度、90度、180度を繰り返します\")\n\ntry:\n    while True:\n        print(\"0度に移動\")\n        set_angle(0)\n        time.sleep(1)\n        \n        print(\"90度に移動\")\n        set_angle(90)\n        time.sleep(1)\n        \n        print(\"180度に移動\")\n        set_angle(180)\n        time.sleep(1)\n        \n        print(\"90度に戻る\")\n        set_angle(90)\n        time.sleep(1)\n        \nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")\n    \nfinally:\n    servo.stop()\n    GPIO.cleanup()\n    print(\"サーボ停止、GPIO cleanup完了\")",
       "setup": {
@@ -89,7 +109,12 @@
       "title": "🌡️📺 DHT22とディスプレイを使ったプログラム",
       "description": "DHT22で取得した温湿度データをLCD1602ディスプレイに表示させるプログラムです。",
       "difficulty": "中級",
-      "tags": ["センサー", "IoT", "ディスプレイ", "LCD"],
+      "tags": [
+        "センサー",
+        "IoT",
+        "ディスプレイ",
+        "LCD"
+      ],
       "filename": "dht22_lcd.py",
       "code": "#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\n\nimport time\nimport board\nimport adafruit_dht\nfrom RPLCD.i2c import CharLCD\nimport os\n\n# lgpioを使用するように環境変数を設定\nos.environ['BLINKA_USE_LGPIO'] = '1'\n\n# DHT22センサーの初期化(GPIO27を使用)\ndht_device = adafruit_dht.DHT22(board.D27, use_pulseio=False)\n\n# LCD1602の初期化(アドレス0x27)\nlcd = CharLCD('PCF8574', 0x27, cols=16, rows=2)\n\ndef main():\n    try:\n        lcd.clear()\n        lcd.cursor_pos = (0, 0)\n        lcd.write_string('DHT22 Sensor')\n        time.sleep(2)\n        \n        while True:\n            try:\n                # 温度と湿度を取得\n                temperature = dht_device.temperature\n                humidity = dht_device.humidity\n                \n                # LCDに表示\n                lcd.clear()\n                lcd.cursor_pos = (0, 0)\n                lcd.write_string(f'Temp: {temperature:.1f}C')\n                lcd.cursor_pos = (1, 0)\n                lcd.write_string(f'Humi: {humidity:.1f}%')\n                \n                # ターミナルにも出力\n                print(f'Temperature: {temperature:.1f}°C, Humidity: {humidity:.1f}%')\n                \n            except RuntimeError as error:\n                # DHT22は読み取りエラーが発生することがある\n                print(f\"Error: {error.args[0]}\")\n                time.sleep(2.0)\n                continue\n            except Exception as e:\n                print(f\"Unexpected error: {e}\")\n                time.sleep(2.0)\n                continue\n            \n            # 2秒待機(DHT22は2秒以上の間隔が必要)\n            time.sleep(2.0)\n            \n    except KeyboardInterrupt:\n        print(\"\\nプログラムを終了します\")\n        lcd.clear()\n        lcd.write_string('Goodbye!')\n        time.sleep(1)\n        lcd.clear()\n    finally:\n        dht_device.exit()\n\nif __name__ == '__main__':\n    main()",
       "setup": {
@@ -103,13 +128,33 @@
       "title": "📏💡 超音波センサーで感知してLED点灯",
       "description": "超音波センサーで20cm以内に物体を感知するとLEDが点灯するシステムです。",
       "difficulty": "中級",
-      "tags": ["超音波センサー", "LED", "距離測定"],
+      "tags": [
+        "超音波センサー",
+        "LED",
+        "距離測定"
+      ],
       "filename": "ultrasonic_sensor_led.py",
       "code": "import RPi.GPIO as GPIO\nimport time\n\n# GPIOピンの設定\nTRIG = 23  # 超音波センサーのTRIGピン\nECHO = 24  # 超音波センサーのECHOピン\nLED = 18   # LEDのピン\n\n# GPIO初期設定\nGPIO.setmode(GPIO.BCM)\nGPIO.setup(TRIG, GPIO.OUT)\nGPIO.setup(ECHO, GPIO.IN)\nGPIO.setup(LED, GPIO.OUT)\n\ndef measure_distance():\n    \"\"\"超音波センサーで距離を測定する関数\"\"\"\n    # TRIGピンを10マイクロ秒間HIGHにして超音波を発射\n    GPIO.output(TRIG, True)\n    time.sleep(0.00001)\n    GPIO.output(TRIG, False)\n    \n    # ECHOピンがHIGHになるまで待つ\n    while GPIO.input(ECHO) == 0:\n        pulse_start = time.time()\n    \n    # ECHOピンがLOWになるまで待つ\n    while GPIO.input(ECHO) == 1:\n        pulse_end = time.time()\n    \n    # 距離を計算(音速340m/s、往復なので2で割る)\n    pulse_duration = pulse_end - pulse_start\n    distance = pulse_duration * 17150\n    distance = round(distance, 2)\n    \n    return distance\n\ntry:\n    print(\"超音波センサー距離測定システム開始\")\n    print(\"20cm以内に物体が来るとLEDが光ります\")\n    print(\"終了するにはCtrl+Cを押してください\")\n    \n    while True:\n        dist = measure_distance()\n        print(f\"距離: {dist} cm\")\n        \n        # 20cm以内に物体があればLEDを点灯\n        if dist <= 20:\n            GPIO.output(LED, True)\n            print(\"→ LEDオン!\")\n        else:\n            GPIO.output(LED, False)\n        \n        time.sleep(0.5)  # 0.5秒ごとに測定\n\nexcept KeyboardInterrupt:\n    print(\"\\nプログラムを終了します\")\n    \nfinally:\n    GPIO.cleanup()  # GPIOピンをクリーンアップ",
       "setup": {
         "connection": "【超音波センサー HC-SR04】\nVCC → ラズパイ 5V\nGND → ラズパイ GND\nTRIG → GPIO 23\nECHO → 分圧回路 → GPIO 24\n\n【分圧回路(重要!)】\nECHO端子 → 1kΩ抵抗 → 分岐点 → GPIO 24\n                      ↓\n                   2kΩ抵抗\n                      ↓\n                     GND\n\n【LED】\nGPIO 18 → 330Ω抵抗 → LED(+) → LED(-) → GND",
         "command": "python3 ultrasonic_sensor_led.py",
         "notes": "⚠️ 重要な注意事項:\n1. ECHOピンには必ず分圧回路が必要です(5V→3.3Vに変換)\n2. 分圧回路なしで接続するとラズパイが壊れます\n3. LEDには330Ω抵抗を必ず付けてください\n4. 超音波センサーは5V電源で動作させてください"
+      }
+    },
+    {
+      "id": "ultrasonic-sensor",
+      "title": "超音波センサーで距離測定",
+      "description": "超音波で距離を測定することができる",
+      "difficulty": "中級",
+      "tags": [
+        "超音波センサーテスト用"
+      ],
+      "filename": "test_ultrasonic.py",
+      "code": "```python\n#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\n\"\"\"\n超音波センサー HC-SR04 動作テスト (Raspberry Pi 5対応)\ngpiodライブラリを使用\n\"\"\"\n\nimport gpiod\nimport time\n\n# ピン設定\nTRIG_PIN = 23\nECHO_PIN = 24\nCHIP = \"gpiochip4\"  # Raspberry Pi 5のGPIOチップ\n\ndef setup():\n    \"\"\"GPIO初期設定\"\"\"\n    chip = gpiod.Chip(CHIP)\n    \n    # Trigピン: 出力\n    trig_line = chip.get_line(TRIG_PIN)\n    trig_line.request(consumer=\"ultrasonic\", type=gpiod.LINE_REQ_DIR_OUT)\n    \n    # Echoピン: 入力\n    echo_line = chip.get_line(ECHO_PIN)\n    echo_line.request(consumer=\"ultrasonic\", type=gpiod.LINE_REQ_DIR_IN)\n    \n    trig_line.set_value(0)\n    \n    print(\"⏳ センサー初期化中...\")\n    time.sleep(2)\n    print(\"✅ 初期化完了\\n\")\n    \n    return chip, trig_line, echo_line\n\ndef measure_distance(trig_line, echo_line):\n    \"\"\"距離測定\"\"\"\n    # トリガー信号送信\n    trig_line.set_value(1)\n    time.sleep(0.00001)  # 10マイクロ秒\n    trig_line.set_value(0)\n    \n    # エコー受信開始待ち\n    timeout = time.time() + 0.5\n    while echo_line.get_value() == 0:\n        pulse_start = time.time()\n        if pulse_start > timeout:\n            return None, \"タイムアウト(LOW)\"\n    \n    # エコー受信終了待ち\n    timeout = time.time() + 0.5\n    while echo_line.get_value() == 1:\n        pulse_end = time.time()\n        if pulse_end > timeout:\n            return None, \"タイムアウト(HIGH)\"\n    \n    # 距離計算\n    pulse_duration = pulse_end - pulse_start\n    distance = pulse_duration * 34300 / 2\n    \n    return distance, \"OK\"\n\ndef main():\n    print(\"=\" * 60)\n    print(\"🔍 超音波センサー HC-SR04 動作確認テスト (Raspberry Pi 5)\")\n    print(\"=\" * 60)\n    print(f\"Trig Pin: GPIO{TRIG_PIN} (Pin 16)\")\n    print(f\"Echo Pin: GPIO{ECHO_PIN} (Pin 18)\")\n    print(f\"GPIO Chip: {CHIP}\")\n    print(\"-\" * 60)\n    \n    chip, trig_line, echo_line = setup()\n    \n    print(\"📊 距離測定を開始します (Ctrl+C で終了)\")\n    print(\"💡 センサーの前に手をかざして、距離が変化するか確認してください\")\n    print(\"-\" * 60)\n    \n    try:\n        count = 0\n        error_count = 0\n        \n        while True:\n            distance, status = measure_distance(trig_line, echo_line)\n            count += 1\n            \n            if distance is not None:\n                # 正常測定\n                bar_length = int(distance / 5)\n                bar = \"█\" * min(bar_length, 40)\n                print(f\"[{count:4d}] 距離: {distance:6.1f} cm  {bar}\", end=\"\")\n                \n                # 距離による判定\n                if distance < 10:\n                    print(\"  🔴 とても近い!\", end=\"\")\n                elif distance < 30:\n                    print(\"  🟡 近い\", end=\"\")\n                elif distance < 100:\n                    print(\"  🟢 適正範囲\", end=\"\")\n                else:\n                    print(\"  🔵 遠い\", end=\"\")\n                print()\n                \n            else:\n                # エラー\n                error_count += 1\n                print(f\"[{count:4d}] ❌ エラー: {status} (エラー回数: {error_count})\")\n            \n            time.sleep(0.5)\n    \n    except KeyboardInterrupt:\n        print(\"\\n\\n\" + \"=\" * 60)\n        print(\"📊 測定結果\")\n        print(\"=\" * 60)\n        print(f\"総測定回数: {count}\")\n        print(f\"エラー回数: {error_count}\")\n        if count > 0:\n            success_rate = ((count - error_count) / count) * 100\n            print(f\"成功率: {success_rate:.1f}%\")\n        print(\"=\" * 60)\n    \n    finally:\n        trig_line.release()\n        echo_line.release()\n        chip.close()\n        print(\"✅ GPIO クリーンアップ完了\")\n\nif __name__ == \"__main__\":\n    main()\n```",
+      "setup": {
+        "connection": "VCC → Raspberry Pi 5V (Pin 2 or 4)\nGND → Raspberry Pi GND (Pin 6)\nTrig → Raspberry Pi GPIO23 (Pin 16)\nEcho → 1kΩ → GPIO24 (Pin 18)",
+        "command": "python3 test_ultrasonic.py",
+        "notes": "ライブラリのインストール\nsudo apt update\nsudo apt install python3-libgpiod -y"
       }
     }
   ]
