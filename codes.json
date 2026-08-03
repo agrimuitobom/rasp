@@ -3,18 +3,19 @@
     {
       "id": "led-blink",
       "title": "🔴 LED点滅プログラム",
-      "description": "基本的なLED制御プログラムです。GPIO18ピンに接続したLEDが1秒間隔で点滅します。",
+      "description": "基本的なLED制御プログラムです。gpiozeroライブラリを使い、GPIO21ピンに接続したLEDが1秒間隔で点滅します。",
       "difficulty": "初級",
       "tags": [
         "GPIO",
-        "LED"
+        "LED",
+        "gpiozero"
       ],
       "filename": "led_blink.py",
-      "code": "import RPi.GPIO as GPIO\nimport time\n\n# GPIOの設定\nGPIO.setmode(GPIO.BCM)\nGPIO.setup(18, GPIO.OUT)\n\nprint(\"LED点滅開始!Ctrl+Cで停止\")\n\ntry:\n    while True:\n        GPIO.output(18, GPIO.HIGH)  # LED点灯\n        print(\"LED ON\")\n        time.sleep(1)\n        \n        GPIO.output(18, GPIO.LOW)   # LED消灯\n        print(\"LED OFF\")\n        time.sleep(1)\n        \nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")\n    \nfinally:\n    GPIO.cleanup()  # GPIOをクリーンアップ\n    print(\"GPIO cleanup完了\")",
+      "code": "from gpiozero import LED\nfrom time import sleep\n\nled = LED(21)\n\nprint(\"LED点滅開始!Ctrl+Cで停止\")\ntry:\n    while True:\n        led.on()\n        print(\"LED ON\")\n        sleep(1)\n        \n        led.off()\n        print(\"LED OFF\")\n        sleep(1)\n        \nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")",
       "setup": {
-        "connection": "GPIO18 → LED+ → 抵抗(220Ω) → GND",
+        "connection": "GPIO21 → LED+ → 抵抗(220Ω) → GND",
         "command": "python3 led_blink.py",
-        "notes": ""
+        "notes": "ライブラリのインストール(ターミナルで実行)\npip install gpiozero lgpio --break-system-packages"
       }
     },
     {
