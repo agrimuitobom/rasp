@@ -462,7 +462,27 @@ pip install adafruit-circuitpython-dht</code></pre>
             </div>
             <p>2回目以降は、ターミナルを開くたびに <code>source ~/rasp-env/bin/activate</code> を実行してから <code>python ファイル名.py</code> で実行します。</p>
 
-            <h4>③ うまくいかないとき</h4>
+            <h4>③ 日本語を入力できるようにする ※最初に1回だけ</h4>
+            <p>はじめはローマ字しか打てません。日本語入力ソフト <strong>Mozc</strong>(Google日本語入力のオープンソース版)を入れます。</p>
+            <div class="code-container">
+                <button class="copy-btn" onclick="copyCode(this, 'setup-japanese')">📋 コピー</button>
+                <pre><code id="setup-japanese" class="language-bash"># 1. 日本語フォントと入力ソフトを入れる
+sudo apt update
+sudo apt install -y fonts-noto-cjk fcitx5-mozc im-config
+
+# 2. 入力方式を fcitx5 にする
+im-config -n fcitx5
+
+# 3. 再起動
+sudo reboot</code></pre>
+            </div>
+            <ul>
+                <li>再起動後、画面右上にキーボードのアイコンが出ます。<strong>「半角/全角」キー</strong>か <strong>Ctrl + Space</strong> で日本語入力に切り替わります。</li>
+                <li>切り替わらないときは、右上のアイコンを右クリック →「設定」で、入力メソッドの一覧に「Mozc」があるか確認します。なければ左下の「+」から追加します。</li>
+                <li>メニューなども日本語表示にしたいときは、<code>sudo raspi-config</code> →「Localisation Options」→「Locale」で <code>ja_JP.UTF-8</code> を選びます。</li>
+            </ul>
+
+            <h4>④ うまくいかないとき</h4>
             <div class="table-wrap">
             <table class="trouble-table">
                 <tr><th>エラー・症状</th><th>原因と対処</th></tr>

@@ -47,6 +47,8 @@ source ~/rasp-env/bin/activate
 pip install adafruit-circuitpython-dht
 ```
 
+日本語入力（Mozc）の入れ方も、サイトの同じ場所に載せています。
+
 詳しい手順とトラブル対処は、サイト上部の「🛠️ はじめに：ラズパイの準備」にまとめています。
 
 > **コードを追加する先生へ**: Pi 5 で動かすため、`RPi.GPIO` ではなく `gpiozero` を使って書いてください。
