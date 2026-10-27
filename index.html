@@ -61,6 +61,10 @@
             transition: transform 0.3s ease;
         }
         
+        .grid > .code-section {
+            min-width: 0;  /* 長いコード行でスマホ画面がはみ出さないように */
+        }
+
         .code-section:hover {
             transform: translateY(-5px);
         }
@@ -283,6 +287,92 @@
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
 
+        /* はじめに(セットアップガイド)のスタイル */
+        .setup-guide {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .setup-guide summary {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2d3748;
+            cursor: pointer;
+        }
+
+        .setup-guide h4 {
+            color: #2c5282;
+            margin: 20px 0 8px;
+        }
+
+        .setup-guide p, .setup-guide li {
+            color: #2d3748;
+            margin: 5px 0;
+        }
+
+        .setup-guide ul {
+            padding-left: 1.5em;
+        }
+
+        .setup-guide .code-container pre {
+            padding-top: 45px;
+        }
+
+        .setup-guide .copy-btn {
+            right: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #48bb78;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.75em;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        .trouble-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .trouble-table th, .trouble-table td {
+            border: 1px solid #e2e8f0;
+            padding: 8px 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .trouble-table th {
+            background: #edf2f7;
+        }
+
+        .trouble-table code, .usage-note code {
+            background: #edf2f7;
+            padding: 1px 4px;
+            border-radius: 3px;
+            word-break: break-all;
+        }
+
+        .command-block {
+            background: #2d3748;
+            color: #f7fafc;
+            border: none;
+            padding: 10px 15px;
+            margin-top: 5px;
+            font-size: 13px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
         @media (max-width: 768px) {
             .grid {
                 grid-template-columns: 1fr;
@@ -338,6 +428,56 @@
             <p class="subtitle">Pythonコード共有サイト - コピーして実行してみよう！</p>
         </header>
 
+        <!-- はじめに：ラズパイの準備 -->
+        <details class="setup-guide" open>
+            <summary>🛠️ はじめに：ラズパイの準備<span class="badge">Pi 5 / Pi 4 対応</span></summary>
+
+            <p>このサイトのコードは <strong>Raspberry Pi 5 / Pi 4</strong> と<strong>最新の Raspberry Pi OS</strong>(Bookworm・Trixie)で動くように作っています。</p>
+
+            <h4>① GPIO(LED・ボタン・サーボ・超音波センサー)のコード</h4>
+            <p><strong>準備は不要です。</strong>使っている <code>gpiozero</code> は Raspberry Pi OS に最初から入っています。<code>python3 ファイル名.py</code> で実行できます。</p>
+            <p>もし <code>ModuleNotFoundError: No module named 'gpiozero'</code> と出たら、次を実行してください。</p>
+            <div class="code-container">
+                <button class="copy-btn" onclick="copyCode(this, 'setup-gpiozero')">📋 コピー</button>
+                <pre><code id="setup-gpiozero" class="language-bash">sudo apt update
+sudo apt install -y python3-gpiozero python3-lgpio</code></pre>
+            </div>
+
+            <h4>② 温湿度センサー(DHT22)を使うコード ※最初に1回だけ</h4>
+            <p>DHT22用のライブラリはOSに入っていないので、<strong>仮想環境(venv)</strong>を作ってその中にインストールします。上から順に1行ずつ実行してください。</p>
+            <div class="code-container">
+                <button class="copy-btn" onclick="copyCode(this, 'setup-venv')">📋 コピー</button>
+                <pre><code id="setup-venv" class="language-bash"># 1. 必要なパッケージ
+sudo apt update
+sudo apt install -y python3-venv python3-full python3-lgpio
+
+# 2. 仮想環境を作成(OSのGPIOライブラリも使えるようにする)
+python3 -m venv --system-site-packages ~/rasp-env
+
+# 3. 仮想環境に入る(行頭に (rasp-env) と表示されればOK)
+source ~/rasp-env/bin/activate
+
+# 4. ライブラリをインストール
+pip install adafruit-circuitpython-dht</code></pre>
+            </div>
+            <p>2回目以降は、ターミナルを開くたびに <code>source ~/rasp-env/bin/activate</code> を実行してから <code>python ファイル名.py</code> で実行します。</p>
+
+            <h4>③ うまくいかないとき</h4>
+            <div class="table-wrap">
+            <table class="trouble-table">
+                <tr><th>エラー・症状</th><th>原因と対処</th></tr>
+                <tr><td><code>error: externally-managed-environment</code></td><td>新しいOSではシステムに直接 <code>pip install</code> できません。②の手順で仮想環境を作り、<code>(rasp-env)</code> と表示された状態で <code>pip install</code> してください。<br>※ <code>--break-system-packages</code> はOSを壊すおそれがあるので使わないでください。</td></tr>
+                <tr><td><code>Unable to locate package libgpiod2</code></td><td>Trixie(Debian 13)ではパッケージ名が変わりました。②の手順のパッケージだけで動くので、<code>libgpiod2</code> は不要です。</td></tr>
+                <tr><td><code>pip3 install Adafruit_DHT</code> が失敗する / <code>Unknown platform</code></td><td><code>Adafruit_DHT</code> は開発終了したライブラリで、Pi 5では動きません。このサイトのDHT22のコード(<code>adafruit_dht</code> 版)を使ってください。</td></tr>
+                <tr><td><code>import RPi.GPIO</code> で <code>Cannot determine SOC peripheral base address</code> などのエラー</td><td><code>RPi.GPIO</code> は Pi 5 では動きません。このサイトのコード(<code>gpiozero</code> 版)を使ってください。</td></tr>
+                <tr><td><code>No module named 'adafruit_dht'</code> / <code>'board'</code> / <code>'RPLCD'</code></td><td>仮想環境に入っていません。<code>source ~/rasp-env/bin/activate</code> を実行してからもう一度実行してください。</td></tr>
+                <tr><td><code>GPIO busy</code> / <code>pin is already in use</code></td><td>前に実行したプログラムがまだ動いています。<code>Ctrl+C</code> で止めるか、ターミナルを開き直してください。</td></tr>
+                <tr><td>DHT22で「読み取り失敗」がときどき出る</td><td>DHT22ではよくあることです。数値が表示される回があれば正常です。ずっと失敗する場合は配線(DATAのピン番号・10kΩプルアップ)を確認してください。</td></tr>
+            </table>
+            </div>
+            <p style="margin-top:10px;">機種の確認: <code>cat /proc/device-tree/model</code> ／ OSの確認: <code>grep VERSION= /etc/os-release</code></p>
+        </details>
+
         <!-- 検索・フィルタリング機能 -->
         <div class="filter-section">
             <div class="search-container">
@@ -364,12 +504,13 @@
         
         <footer>
             <p>🎓 愛媛県立西条農業高等学校 プログラミング教室</p>
-            <p>作成日: 2025年11月</p>
+            <p>作成日: 2025年11月 ／ 更新日: 2026年10月(Raspberry Pi 5・最新OS対応)</p>
         </footer>
     </div>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
     <script>
         // JSONからコードを読み込んで動的に生成
         let allCodes = [];
@@ -383,13 +524,29 @@
                     allCodes = data.codes;
                     generateNavigation();
                     generateCodeSections();
-                    Prism.highlightAll();
+                    if (window.Prism) Prism.highlightAll();  // CDNが読めなくてもコードは表示する
                 })
                 .catch(error => {
                     console.error('Error loading codes.json:', error);
                     document.getElementById('codeGrid').innerHTML = '<div class="no-results">コードの読み込みに失敗しました。codes.jsonファイルを確認してください。</div>';
                 });
         });
+
+        // HTMLエスケープ(< や & をそのまま表示するため)
+        function escapeHtml(text) {
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // 改行と連続する空白を保ったままHTMLにする(配線図の位置ずれ防止)
+        function toHtml(text) {
+            return escapeHtml(text)
+                .replace(/ {2,}/g, m => '&nbsp;'.repeat(m.length))
+                .replace(/\n/g, '<br>');
+        }
 
         // ナビゲーションを動的生成
         function generateNavigation() {
@@ -484,22 +641,26 @@
 
                 if (code.setup.connection) {
                     const connection = document.createElement('p');
-                    connection.innerHTML = '<strong>接続:</strong><br>' + code.setup.connection.replace(/\n/g, '<br>');
+                    connection.innerHTML = '<strong>接続:</strong><br>' + toHtml(code.setup.connection);
                     usageNote.appendChild(connection);
                 }
 
                 if (code.setup.notes) {
                     const notes = document.createElement('p');
-                    notes.innerHTML = '<strong>注意:</strong><br>' + code.setup.notes.replace(/\n/g, '<br>');
+                    notes.innerHTML = '<strong>注意:</strong><br>' + toHtml(code.setup.notes);
                     usageNote.appendChild(notes);
                 }
 
                 const filename = document.createElement('p');
-                filename.innerHTML = '<strong>📝 ファイル名:</strong> <code>' + code.filename + '</code>';
+                filename.innerHTML = '<strong>📝 ファイル名:</strong> <code>' + escapeHtml(code.filename) + '</code>';
                 usageNote.appendChild(filename);
 
                 const command = document.createElement('p');
-                command.innerHTML = '<strong>実行コマンド:</strong> <code>' + code.setup.command + '</code>';
+                command.innerHTML = '<strong>実行コマンド:</strong>';
+                const commandPre = document.createElement('pre');
+                commandPre.className = 'command-block';
+                commandPre.textContent = code.setup.command;
+                command.appendChild(commandPre);
                 usageNote.appendChild(command);
 
                 section.appendChild(usageNote);
@@ -594,7 +755,7 @@
                 
                 // 2秒後に元に戻す
                 setTimeout(function() {
-                    button.textContent = 'コピー';
+                    button.textContent = '📋 コピー';
                     button.classList.remove('copied');
                 }, 2000);
                 
@@ -613,7 +774,7 @@
                     button.classList.add('copied');
                     
                     setTimeout(function() {
-                        button.textContent = 'コピー';
+                        button.textContent = '📋 コピー';
                         button.classList.remove('copied');
                     }, 2000);
                     
@@ -676,7 +837,7 @@
         
         // ページ読み込み後にシンタックスハイライトを適用
         document.addEventListener('DOMContentLoaded', function() {
-            Prism.highlightAll();
+            if (window.Prism) Prism.highlightAll();  // CDNが読めなくてもコードは表示する
         });
     </script>
 </body>

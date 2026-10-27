@@ -29,6 +29,28 @@ rasp/
 3. 「📋 コピー」または「💾 ダウンロード」ボタンをクリック
 4. ラズパイで実行！
 
+### 🍓 Raspberry Pi 5 / 最新OS対応について
+
+サイト上のコードは **Raspberry Pi 5 / Pi 4** と **最新の Raspberry Pi OS（Bookworm・Trixie）** で動くようにしています。
+
+- GPIO制御は **gpiozero** を使用（OSに最初から入っているのでインストール不要）
+  - 古い `RPi.GPIO` は Pi 5 では動かないため使っていません
+- 温湿度センサー（DHT22）は **adafruit-circuitpython-dht** を使用
+  - 開発終了した `Adafruit_DHT` は Pi 5 では動きません
+  - 新しいOSでは `pip install` を直接実行すると `externally-managed-environment` エラーになるため、仮想環境（venv）にインストールします
+
+```bash
+sudo apt update
+sudo apt install -y python3-venv python3-full python3-lgpio
+python3 -m venv --system-site-packages ~/rasp-env
+source ~/rasp-env/bin/activate
+pip install adafruit-circuitpython-dht
+```
+
+詳しい手順とトラブル対処は、サイト上部の「🛠️ はじめに：ラズパイの準備」にまとめています。
+
+> **コードを追加する先生へ**: Pi 5 で動かすため、`RPi.GPIO` ではなく `gpiozero` を使って書いてください。
+
 ---
 
 ## ✨ 各方法の比較
@@ -125,7 +147,7 @@ git push
   "difficulty": "初級",
   "tags": ["GPIO", "センサー"],
   "filename": "your_code.py",
-  "code": "import RPi.GPIO as GPIO\n...",
+  "code": "from gpiozero import LED\n...",
   "setup": {
     "connection": "VCC→5V, GND→GND",
     "command": "python3 your_code.py",
@@ -187,4 +209,4 @@ git push
 ---
 
 **作成**: 愛媛県立西条農業高等学校 プログラミング教室
-**更新日**: 2025年11月
+**更新日**: 2026年10月（Raspberry Pi 5・最新OS対応）
