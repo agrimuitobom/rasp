@@ -71,8 +71,8 @@ body:
       label: Pythonコード
       description: コード全体を貼り付けてください
       placeholder: |
-        import RPi.GPIO as GPIO
-        import time
+        from gpiozero import LED
+        from time import sleep
 
         # ここにコードを入力
       render: python

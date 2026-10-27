@@ -39,7 +39,10 @@ jobs:
             const difficulty = extractField(body, '難易度');
             const tagsStr = extractField(body, 'タグ');
             const filename = extractField(body, 'ファイル名');
-            const code = extractField(body, 'Pythonコード');
+            // Issueフォームはコードをコードブロック(バッククォート3つ)で囲むので、囲みを取り除く
+            const code = extractField(body, 'Pythonコード')
+              .replace(/^```[a-zA-Z0-9]*\s*\n/, '')
+              .replace(/\n?```\s*$/, '');
             const connection = extractField(body, '接続方法');
             const command = extractField(body, '実行コマンド');
             const notes = extractField(body, '備考・注意事項');
