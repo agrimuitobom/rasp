@@ -11,12 +11,21 @@
         "gpiozero"
       ],
       "filename": "led_blink.py",
+      "parts": [
+        "LED×1",
+        "抵抗 220Ω×1",
+        "ジャンパーワイヤー"
+      ],
       "code": "from gpiozero import LED\nfrom time import sleep\n\nled = LED(21)  # GPIO21にLEDを接続\n\nprint(\"LED点滅開始!Ctrl+Cで停止\")\ntry:\n    while True:\n        led.on()\n        print(\"LED ON\")\n        sleep(1)\n\n        led.off()\n        print(\"LED OFF\")\n        sleep(1)\n\nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")",
       "setup": {
         "connection": "GPIO21 → LED+ → 抵抗(220Ω) → GND",
         "command": "python3 led_blink.py",
         "notes": "Raspberry Pi OS には gpiozero が最初から入っているので、インストール不要です。\n(Pi 5 / Pi 4 どちらでも動きます。古い RPi.GPIO は Pi 5 では動きません)"
-      }
+      },
+      "challenges": [
+        "点滅の速さを0.2秒にしてみよう",
+        "3回速く・3回ゆっくり点滅する「モールス信号のSOS」を作ろう"
+      ]
     },
     {
       "id": "button-led",
@@ -29,12 +38,21 @@
         "gpiozero"
       ],
       "filename": "button_led.py",
+      "parts": [
+        "LED×1",
+        "抵抗 220Ω×1",
+        "タクトスイッチ×1"
+      ],
       "code": "from gpiozero import LED, Button\nfrom time import sleep\n\nled = LED(18)        # LED用(GPIO18)\nbutton = Button(2)   # ボタン用(GPIO2) ※内部プルアップが自動で有効になります\n\nprint(\"ボタンでLED制御開始!Ctrl+Cで停止\")\nprint(\"ボタンを押してください\")\n\ntry:\n    while True:\n        if button.is_pressed:  # ボタンが押された\n            led.on()           # LED点灯\n            print(\"ボタンが押されました - LED ON\")\n        else:\n            led.off()          # LED消灯\n\n        sleep(0.1)  # CPUの負荷を軽減\n\nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")",
       "setup": {
         "connection": "GPIO2 → ボタン → GND\nGPIO18 → LED+ → 抵抗(220Ω) → GND",
         "command": "python3 button_led.py",
         "notes": "Raspberry Pi OS には gpiozero が最初から入っているので、インストール不要です。\n(Pi 5 / Pi 4 どちらでも動きます。古い RPi.GPIO は Pi 5 では動きません)"
-      }
+      },
+      "challenges": [
+        "ボタンを押すたびにON/OFFが切り替わるようにしよう(ヒント: led.toggle())",
+        "ボタンを押した回数を数えて表示しよう"
+      ]
     },
     {
       "id": "dht22",
@@ -47,12 +65,20 @@
         "venv"
       ],
       "filename": "dht22.py",
+      "parts": [
+        "DHT22 または DHT11(キットの青いセンサー)",
+        "抵抗 10kΩ(モジュールなら不要)"
+      ],
       "code": "import time\nfrom datetime import datetime\nimport board\nimport adafruit_dht\n\n# センサーの設定(DHT22をGPIO4に接続)\n# DHT11を使う場合は adafruit_dht.DHT11 に変更\ndht = adafruit_dht.DHT22(board.D4, use_pulseio=False)\n\nprint(\"温湿度測定開始!Ctrl+Cで停止\")\n\ntry:\n    while True:\n        now = datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\")\n        try:\n            temperature = dht.temperature\n            humidity = dht.humidity\n            if humidity is not None and temperature is not None:\n                print(f\"{now} - 温度: {temperature:.1f}°C, 湿度: {humidity:.1f}%\")\n            else:\n                print(f\"{now} - センサーの読み取りに失敗しました\")\n        except RuntimeError as e:\n            # DHTは時々読み取りに失敗するので、次の回で再挑戦\n            print(f\"{now} - 読み取り失敗: {e.args[0]}\")\n\n        time.sleep(2)  # 2秒間隔で測定(DHT22は2秒以上あける)\n\nexcept KeyboardInterrupt:\n    print(\"\\n測定を停止しました\")\nfinally:\n    dht.exit()  # GPIOを解放(これがないと再実行時に「ピン使用中」エラーになることがある)",
       "setup": {
         "connection": "VCC→3.3V, GND→GND, DATA→GPIO4",
         "command": "source ~/rasp-env/bin/activate\npython dht22.py",
         "notes": "【最初に1回だけ】ページ上部の「はじめに：ラズパイの準備」の手順で仮想環境 ~/rasp-env を作ってください。\n\n⚠️ pip3 install Adafruit_DHT は使えません(開発終了・Pi 5非対応)。\n⚠️ 新しいOSでは pip install をそのまま実行すると externally-managed-environment エラーになります。必ず仮想環境の中でインストールしてください。\n\n最初の数回は「読み取り失敗」が出ることがありますが、DHT22ではよくあることです。数値が出れば成功です。"
-      }
+      },
+      "challenges": [
+        "温度が30℃を超えたら「暑い!」と表示しよう",
+        "不快指数 0.81×温度 + 0.01×湿度×(0.99×温度 − 14.3) + 46.3 を計算して表示しよう"
+      ]
     },
     {
       "id": "led-pattern",
@@ -66,12 +92,20 @@
         "gpiozero"
       ],
       "filename": "led_pattern.py",
+      "parts": [
+        "LED×4",
+        "抵抗 220Ω×4"
+      ],
       "code": "from gpiozero import LED\nfrom time import sleep\n\n# 4つのLEDピン(GPIO18, 19, 20, 21)\nleds = [LED(18), LED(19), LED(20), LED(21)]\n\ndef all_off():\n    for led in leds:\n        led.off()\n\ndef pattern_1():\n    \"\"\"順番に点灯\"\"\"\n    for led in leds:\n        led.on()\n        sleep(0.3)\n        led.off()\n\ndef pattern_2():\n    \"\"\"全点滅\"\"\"\n    for led in leds:\n        led.on()\n    sleep(0.5)\n    all_off()\n    sleep(0.5)\n\ndef pattern_3():\n    \"\"\"左右から中央へ\"\"\"\n    leds[0].on()\n    leds[3].on()\n    sleep(0.3)\n    leds[1].on()\n    leds[2].on()\n    sleep(0.3)\n    all_off()\n    sleep(0.3)\n\nprint(\"LEDパターン制御開始!Ctrl+Cで停止\")\n\ntry:\n    pattern = 1\n    while True:\n        print(f\"パターン {pattern}\")\n\n        if pattern == 1:\n            pattern_1()\n        elif pattern == 2:\n            pattern_2()\n        else:\n            pattern_3()\n\n        pattern = (pattern % 3) + 1  # 1,2,3を循環\n        sleep(0.5)\n\nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")\n\nfinally:\n    all_off()\n    print(\"LEDをすべて消灯しました\")",
       "setup": {
         "connection": "GPIO18, 19, 20, 21 → 各LED+ → 抵抗(220Ω) → GND",
         "command": "python3 led_pattern.py",
         "notes": "Raspberry Pi OS には gpiozero が最初から入っているので、インストール不要です。\n(Pi 5 / Pi 4 どちらでも動きます。古い RPi.GPIO は Pi 5 では動きません)"
-      }
+      },
+      "challenges": [
+        "オリジナルのパターン4を作ろう",
+        "LEDを8個に増やして「ナイトライダー」のように光らせよう"
+      ]
     },
     {
       "id": "pwm-led",
@@ -85,12 +119,20 @@
         "gpiozero"
       ],
       "filename": "pwm_led.py",
+      "parts": [
+        "LED×1",
+        "抵抗 220Ω×1"
+      ],
       "code": "from gpiozero import PWMLED\nfrom time import sleep\n\n# PWMで明るさを変えられるLED(GPIO18、1000Hz)\nled = PWMLED(18, frequency=1000)\n\nprint(\"PWM LED制御開始!Ctrl+Cで停止\")\nprint(\"LEDが明暗を繰り返します\")\n\ntry:\n    while True:\n        # 明るくなる(0% → 100%)\n        print(\"明るくなっています...\")\n        for duty_cycle in range(0, 101, 2):\n            led.value = duty_cycle / 100  # 0.0〜1.0で明るさを指定\n            sleep(0.05)\n\n        sleep(0.5)\n\n        # 暗くなる(100% → 0%)\n        print(\"暗くなっています...\")\n        for duty_cycle in range(100, -1, -2):\n            led.value = duty_cycle / 100\n            sleep(0.05)\n\n        sleep(0.5)\n\nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")\n\nfinally:\n    led.off()\n    print(\"PWM停止\")",
       "setup": {
         "connection": "GPIO18 → LED+ → 抵抗(220Ω) → GND",
         "command": "python3 pwm_led.py",
         "notes": "Raspberry Pi OS には gpiozero が最初から入っているので、インストール不要です。\n(Pi 5 / Pi 4 どちらでも動きます。古い RPi.GPIO は Pi 5 では動きません)"
-      }
+      },
+      "challenges": [
+        "ふわっと点く「呼吸ランプ」の速さを変えてみよう",
+        "ボタンを押している間だけ明るくなるようにしよう"
+      ]
     },
     {
       "id": "servo",
@@ -103,12 +145,19 @@
         "gpiozero"
       ],
       "filename": "servo_control.py",
+      "parts": [
+        "サーボモーター SG90×1"
+      ],
       "code": "from gpiozero import AngularServo\nfrom time import sleep\n\n# サーボモーター(SG90など)をGPIO18に接続\n# パルス幅 0.5ms〜2.5ms を 0度〜180度 に対応させる\nservo = AngularServo(\n    18,\n    min_angle=0,\n    max_angle=180,\n    min_pulse_width=0.5 / 1000,\n    max_pulse_width=2.5 / 1000,\n)\n\ndef set_angle(angle):\n    \"\"\"角度を指定してサーボを動かす\"\"\"\n    servo.angle = angle\n    sleep(0.5)\n    servo.detach()  # 信号停止でジッター(プルプル震え)を防ぐ\n\nprint(\"サーボモーター制御開始!Ctrl+Cで停止\")\nprint(\"サーボが0度、90度、180度を繰り返します\")\n\ntry:\n    while True:\n        print(\"0度に移動\")\n        set_angle(0)\n        sleep(1)\n\n        print(\"90度に移動\")\n        set_angle(90)\n        sleep(1)\n\n        print(\"180度に移動\")\n        set_angle(180)\n        sleep(1)\n\n        print(\"90度に戻る\")\n        set_angle(90)\n        sleep(1)\n\nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")\n\nfinally:\n    servo.detach()\n    print(\"サーボ停止\")",
       "setup": {
         "connection": "赤線→5V, 茶線→GND, オレンジ線→GPIO18",
         "command": "python3 servo_control.py",
         "notes": "※サーボは5V電源で動作させてください\n※gpiozeroはインストール不要です(Pi 5 / Pi 4 対応)\n※ソフトウェアPWMのため、停止中に少し震えることがあります。プログラムでは動かした後に信号を止めて震えを防いでいます"
-      }
+      },
+      "challenges": [
+        "0度→180度を10度ずつゆっくり動かそう",
+        "ボタンを押すたびに45度ずつ回る「自動エサやり機」を考えよう"
+      ]
     },
     {
       "id": "dht22-lcd",
@@ -123,12 +172,20 @@
         "venv"
       ],
       "filename": "dht22_lcd.py",
+      "parts": [
+        "DHT22 または DHT11",
+        "LCD1602(I2C)"
+      ],
       "code": "#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\n\nimport time\nimport board\nimport adafruit_dht\nfrom RPLCD.i2c import CharLCD\n\n# DHT22センサーの初期化(GPIO27を使用)\ndht_device = adafruit_dht.DHT22(board.D27, use_pulseio=False)\n\n# LCD1602の初期化(アドレス0x27)\n# i2cdetect で 0x3f と表示された場合は 0x3f に変更\nlcd = CharLCD('PCF8574', 0x27, cols=16, rows=2)\n\ndef main():\n    try:\n        lcd.clear()\n        lcd.cursor_pos = (0, 0)\n        lcd.write_string('DHT22 Sensor')\n        time.sleep(2)\n\n        while True:\n            try:\n                # 温度と湿度を取得\n                temperature = dht_device.temperature\n                humidity = dht_device.humidity\n\n                if temperature is None or humidity is None:\n                    raise RuntimeError(\"値を取得できませんでした\")\n\n                # LCDに表示\n                lcd.clear()\n                lcd.cursor_pos = (0, 0)\n                lcd.write_string(f'Temp: {temperature:.1f}C')\n                lcd.cursor_pos = (1, 0)\n                lcd.write_string(f'Humi: {humidity:.1f}%')\n\n                # ターミナルにも出力\n                print(f'温度: {temperature:.1f}°C, 湿度: {humidity:.1f}%')\n\n            except RuntimeError as error:\n                # DHT22は読み取りエラーが発生することがある(次の回で再挑戦)\n                print(f\"読み取り失敗: {error.args[0]}\")\n\n            # 2秒待機(DHT22は2秒以上の間隔が必要)\n            time.sleep(2.0)\n\n    except KeyboardInterrupt:\n        print(\"\\nプログラムを終了します\")\n        lcd.clear()\n        lcd.write_string('Goodbye!')\n        time.sleep(1)\n        lcd.clear()\n    finally:\n        dht_device.exit()  # GPIOを解放\n        lcd.close(clear=False)\n\nif __name__ == '__main__':\n    main()",
       "setup": {
         "connection": "DHT22: VCC→3.3V, DATA→GPIO27, GND→GND (10kΩプルアップ抵抗)\nLCD1602: VCC→5V, GND→GND, SDA→GPIO2, SCL→GPIO3",
         "command": "source ~/rasp-env/bin/activate\npython dht22_lcd.py",
         "notes": "【最初に1回だけ】\n1. ページ上部の「はじめに：ラズパイの準備」で仮想環境 ~/rasp-env を作る\n2. I2Cを有効化: sudo raspi-config nonint do_i2c 0\n3. sudo apt install -y i2c-tools\n4. 仮想環境に入って LCD用ライブラリを追加:\n   source ~/rasp-env/bin/activate\n   pip install RPLCD smbus2\n5. i2cdetect -y 1 で 27 (0x27) が表示されるか確認\n\n⚠️ pip3 install を仮想環境の外で実行すると externally-managed-environment エラーになります。"
-      }
+      },
+      "challenges": [
+        "30℃を超えたらLCDに「HOT!」と表示しよう",
+        "最高気温と最低気温も記録して表示しよう"
+      ]
     },
     {
       "id": "ultrasonic-sensor-LED",
@@ -142,12 +199,22 @@
         "gpiozero"
       ],
       "filename": "ultrasonic_sensor_led.py",
+      "parts": [
+        "超音波センサー HC-SR04",
+        "LED×1",
+        "抵抗 330Ω×1",
+        "抵抗 1kΩ・2kΩ(分圧用)"
+      ],
       "code": "from gpiozero import DigitalInputDevice, DigitalOutputDevice, LED\nimport time\n\n# GPIOピンの設定\ntrig = DigitalOutputDevice(23)  # 超音波センサーのTRIGピン\necho = DigitalInputDevice(24)   # 超音波センサーのECHOピン\nled = LED(18)                   # LEDのピン\n\ndef measure_distance():\n    \"\"\"超音波センサーで距離を測定する関数(失敗したらNoneを返す)\"\"\"\n    # TRIGピンを10マイクロ秒間HIGHにして超音波を発射\n    trig.on()\n    time.sleep(0.00001)\n    trig.off()\n\n    # ECHOピンがHIGHになるまで待つ(0.1秒でタイムアウト)\n    timeout = time.perf_counter() + 0.1\n    while echo.value == 0:\n        if time.perf_counter() > timeout:\n            return None\n    pulse_start = time.perf_counter()\n\n    # ECHOピンがLOWになるまで待つ(0.1秒でタイムアウト)\n    timeout = time.perf_counter() + 0.1\n    while echo.value == 1:\n        if time.perf_counter() > timeout:\n            return None\n    pulse_end = time.perf_counter()\n\n    # 距離を計算(音速343m/s、往復なので2で割る)\n    pulse_duration = pulse_end - pulse_start\n    distance = pulse_duration * 34300 / 2\n    return round(distance, 2)\n\ntry:\n    print(\"超音波センサー距離測定システム開始\")\n    print(\"20cm以内に物体が来るとLEDが光ります\")\n    print(\"終了するにはCtrl+Cを押してください\")\n\n    while True:\n        dist = measure_distance()\n\n        if dist is None:\n            print(\"測定失敗(配線を確認してください)\")\n        else:\n            print(f\"距離: {dist} cm\")\n\n            # 20cm以内に物体があればLEDを点灯\n            if dist <= 20:\n                led.on()\n                print(\"→ LEDオン!\")\n            else:\n                led.off()\n\n        time.sleep(0.5)  # 0.5秒ごとに測定\n\nexcept KeyboardInterrupt:\n    print(\"\\nプログラムを終了します\")\n\nfinally:\n    led.off()",
       "setup": {
         "connection": "【超音波センサー HC-SR04】\nVCC → ラズパイ 5V\nGND → ラズパイ GND\nTRIG → GPIO 23\nECHO → 分圧回路 → GPIO 24\n\n【分圧回路(重要!)】\nECHO端子 → 1kΩ抵抗 → 分岐点 → GPIO 24\n                      ↓\n                   2kΩ抵抗\n                      ↓\n                     GND\n\n【LED】\nGPIO 18 → 330Ω抵抗 → LED(+) → LED(-) → GND",
         "command": "python3 ultrasonic_sensor_led.py",
         "notes": "⚠️ 重要な注意事項:\n1. ECHOピンには必ず分圧回路が必要です(5V→3.3Vに変換)\n2. 分圧回路なしで接続するとラズパイが壊れます\n3. LEDには330Ω抵抗を必ず付けてください\n4. 超音波センサーは5V電源で動作させてください\n5. gpiozeroはインストール不要です(Pi 5 / Pi 4 対応)"
-      }
+      },
+      "challenges": [
+        "近さに合わせてLEDの点滅を速くしよう(バックセンサー)",
+        "ブザーを追加して、近づくと音で知らせよう"
+      ]
     },
     {
       "id": "ultrasonic-sensor",
@@ -161,12 +228,355 @@
         "gpiozero"
       ],
       "filename": "test_ultrasonic.py",
+      "parts": [
+        "超音波センサー HC-SR04",
+        "抵抗 1kΩ・2kΩ(分圧用)"
+      ],
       "code": "#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\n\"\"\"\n超音波センサー HC-SR04 動作テスト\nRaspberry Pi 5 / Pi 4 / 最新Raspberry Pi OS 対応(gpiozeroを使用)\n\"\"\"\n\nfrom gpiozero import DigitalInputDevice, DigitalOutputDevice\nimport time\n\n# ピン設定\nTRIG_PIN = 23\nECHO_PIN = 24\n\ndef setup():\n    \"\"\"GPIO初期設定\"\"\"\n    trig = DigitalOutputDevice(TRIG_PIN)  # Trigピン: 出力\n    echo = DigitalInputDevice(ECHO_PIN)   # Echoピン: 入力\n\n    print(\"⏳ センサー初期化中...\")\n    time.sleep(2)\n    print(\"✅ 初期化完了\\n\")\n\n    return trig, echo\n\ndef measure_distance(trig, echo):\n    \"\"\"距離測定\"\"\"\n    # トリガー信号送信\n    trig.on()\n    time.sleep(0.00001)  # 10マイクロ秒\n    trig.off()\n\n    # エコー受信開始待ち\n    timeout = time.perf_counter() + 0.5\n    while echo.value == 0:\n        if time.perf_counter() > timeout:\n            return None, \"タイムアウト(LOW)\"\n    pulse_start = time.perf_counter()\n\n    # エコー受信終了待ち\n    timeout = time.perf_counter() + 0.5\n    while echo.value == 1:\n        if time.perf_counter() > timeout:\n            return None, \"タイムアウト(HIGH)\"\n    pulse_end = time.perf_counter()\n\n    # 距離計算\n    pulse_duration = pulse_end - pulse_start\n    distance = pulse_duration * 34300 / 2\n\n    return distance, \"OK\"\n\ndef main():\n    print(\"=\" * 60)\n    print(\"🔍 超音波センサー HC-SR04 動作確認テスト\")\n    print(\"=\" * 60)\n    print(f\"Trig Pin: GPIO{TRIG_PIN} (Pin 16)\")\n    print(f\"Echo Pin: GPIO{ECHO_PIN} (Pin 18)\")\n    print(\"-\" * 60)\n\n    trig, echo = setup()\n\n    print(\"📊 距離測定を開始します (Ctrl+C で終了)\")\n    print(\"💡 センサーの前に手をかざして、距離が変化するか確認してください\")\n    print(\"-\" * 60)\n\n    count = 0\n    error_count = 0\n\n    try:\n        while True:\n            distance, status = measure_distance(trig, echo)\n            count += 1\n\n            if distance is not None:\n                # 正常測定\n                bar_length = int(distance / 5)\n                bar = \"█\" * min(bar_length, 40)\n                print(f\"[{count:4d}] 距離: {distance:6.1f} cm  {bar}\", end=\"\")\n\n                # 距離による判定\n                if distance < 10:\n                    print(\"  🔴 とても近い!\", end=\"\")\n                elif distance < 30:\n                    print(\"  🟡 近い\", end=\"\")\n                elif distance < 100:\n                    print(\"  🟢 適正範囲\", end=\"\")\n                else:\n                    print(\"  🔵 遠い\", end=\"\")\n                print()\n\n            else:\n                # エラー\n                error_count += 1\n                print(f\"[{count:4d}] ❌ エラー: {status} (エラー回数: {error_count})\")\n\n            time.sleep(0.5)\n\n    except KeyboardInterrupt:\n        print(\"\\n\\n\" + \"=\" * 60)\n        print(\"📊 測定結果\")\n        print(\"=\" * 60)\n        print(f\"総測定回数: {count}\")\n        print(f\"エラー回数: {error_count}\")\n        if count > 0:\n            success_rate = ((count - error_count) / count) * 100\n            print(f\"成功率: {success_rate:.1f}%\")\n        print(\"=\" * 60)\n\n    finally:\n        trig.close()\n        echo.close()\n        print(\"✅ GPIO クリーンアップ完了\")\n\nif __name__ == \"__main__\":\n    main()",
       "setup": {
         "connection": "VCC → Raspberry Pi 5V (Pin 2 or 4)\nGND → Raspberry Pi GND (Pin 6)\nTrig → Raspberry Pi GPIO23 (Pin 16)\nEcho → 1kΩ → 分岐点 → GPIO24 (Pin 18)\n                    ↓\n                 2kΩ抵抗 → GND\n(Echoは5Vなので分圧回路で3.3Vに下げます)",
         "command": "python3 test_ultrasonic.py",
         "notes": "Raspberry Pi OS には gpiozero が最初から入っているので、インストール不要です。\n(Pi 5 / Pi 4 どちらでも動きます。古い RPi.GPIO は Pi 5 では動きません)"
-      }
+      },
+      "challenges": [
+        "10回測った平均を表示して、値のばらつきを減らそう",
+        "物差しで実際の距離と比べて、誤差を調べよう"
+      ]
+    },
+    {
+      "id": "traffic-light",
+      "title": "🚦 信号機",
+      "description": "赤・黄・緑の3つのLEDで本物そっくりの信号機を作ります。gpiozeroのTrafficLightsを使います。",
+      "difficulty": "初級",
+      "tags": [
+        "GPIO",
+        "LED",
+        "gpiozero"
+      ],
+      "filename": "traffic_light.py",
+      "parts": [
+        "LED 赤・黄・緑 各1",
+        "抵抗 220Ω×3"
+      ],
+      "code": "from gpiozero import TrafficLights\nfrom time import sleep\n\n# 信号機(赤=GPIO17, 黄=GPIO27, 緑=GPIO22)\nlights = TrafficLights(red=17, amber=27, green=22)\n\nprint(\"信号機スタート!Ctrl+Cで停止\")\n\ntry:\n    while True:\n        lights.green.on()\n        print(\"🟢 青:進め\")\n        sleep(5)\n        lights.green.off()\n\n        lights.amber.on()\n        print(\"🟡 黄:注意\")\n        sleep(2)\n        lights.amber.off()\n\n        lights.red.on()\n        print(\"🔴 赤:止まれ\")\n        sleep(5)\n        lights.red.off()\n\nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")\n\nfinally:\n    lights.off()",
+      "setup": {
+        "connection": "GPIO17 → 赤LED → 220Ω → GND\nGPIO27 → 黄LED → 220Ω → GND\nGPIO22 → 緑LED → 220Ω → GND",
+        "command": "python3 traffic_light.py",
+        "notes": "Raspberry Pi OS には gpiozero が最初から入っているので、インストール不要です。\n(Pi 5 / Pi 4 どちらでも動きます)"
+      },
+      "challenges": [
+        "青信号の終わりに緑LEDを点滅させよう(ヒント: lights.green.blink())",
+        "歩行者用ボタンを追加して、押したら早めに赤になるようにしよう"
+      ]
+    },
+    {
+      "id": "rgb-led",
+      "title": "🌈 RGB LEDで色を作る",
+      "description": "1つのLEDで赤・緑・青を混ぜて、いろいろな色を作ります。最後は虹色にゆっくり変化します。",
+      "difficulty": "初級",
+      "tags": [
+        "LED",
+        "PWM",
+        "光の三原色",
+        "gpiozero"
+      ],
+      "filename": "rgb_led.py",
+      "parts": [
+        "RGB LED×1",
+        "抵抗 220Ω×3"
+      ],
+      "code": "from gpiozero import RGBLED\nfrom time import sleep\nimport colorsys\n\n# RGB LED(赤=GPIO17, 緑=GPIO27, 青=GPIO22)\n# 光り方が逆(消えるはずのときに光る)なら、コモンアノード型なので\n# RGBLED(red=17, green=27, blue=22, active_high=False) に変更してください\nled = RGBLED(red=17, green=27, blue=22)\n\n# (名前, (赤, 緑, 青)) それぞれ 0.0〜1.0 で明るさを指定\ncolors = [\n    (\"赤\", (1, 0, 0)),\n    (\"緑\", (0, 1, 0)),\n    (\"青\", (0, 0, 1)),\n    (\"黄(赤+緑)\", (1, 1, 0)),\n    (\"水色(緑+青)\", (0, 1, 1)),\n    (\"紫(赤+青)\", (1, 0, 1)),\n    (\"白(全部)\", (1, 1, 1)),\n]\n\nprint(\"RGB LEDで色を作ろう!Ctrl+Cで停止\")\n\ntry:\n    while True:\n        # 1. 光の三原色を混ぜて色を作る\n        for name, color in colors:\n            print(f\"{name}: {color}\")\n            led.color = color\n            sleep(1)\n\n        # 2. 虹色にゆっくり変化させる\n        print(\"🌈 虹色モード\")\n        for i in range(360):\n            hue = i / 360  # 色相(0.0〜1.0)\n            led.color = colorsys.hsv_to_rgb(hue, 1, 1)\n            sleep(0.02)\n\nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")\n\nfinally:\n    led.off()",
+      "setup": {
+        "connection": "RGB LEDの足: 一番長い足が共通(コモン)\nGPIO17 → 220Ω → R(赤)\nGPIO27 → 220Ω → G(緑)\nGPIO22 → 220Ω → B(青)\n共通の足 → GND(カソードコモン) / 3.3V(アノードコモン)",
+        "command": "python3 rgb_led.py",
+        "notes": "Raspberry Pi OS には gpiozero が最初から入っているので、インストール不要です。\n(Pi 5 / Pi 4 どちらでも動きます)\n\n※光り方が逆になる場合は、コード内の説明に従って active_high=False を追加してください"
+      },
+      "challenges": [
+        "オレンジ色やピンク色を作ってみよう",
+        "温度センサーと組み合わせて、温度で色が変わる「温度ランプ」を作ろう"
+      ]
+    },
+    {
+      "id": "pir-alarm",
+      "title": "🦌 人感センサーで鳥獣害対策アラーム",
+      "description": "人感センサー(PIR)が動物や人の動きを検知すると、ブザーとLEDで知らせます。畑の鳥獣害対策のしくみを体験できます。",
+      "difficulty": "初級",
+      "tags": [
+        "センサー",
+        "人感センサー",
+        "ブザー",
+        "農業",
+        "gpiozero"
+      ],
+      "filename": "pir_alarm.py",
+      "parts": [
+        "人感センサー(PIR) HC-SR501",
+        "アクティブブザー×1",
+        "LED×1",
+        "抵抗 220Ω×1"
+      ],
+      "code": "from gpiozero import MotionSensor, Buzzer, LED\nfrom datetime import datetime\nfrom time import sleep\n\n# 人感センサー(PIR)=GPIO17, ブザー=GPIO18, LED=GPIO27\npir = MotionSensor(17)\nbuzzer = Buzzer(18)\nled = LED(27)\n\ncount = 0  # 検知した回数\n\nprint(\"🦌 鳥獣害対策アラーム 起動中...\")\nprint(\"センサーが安定するまで30秒ほど待ってください\")\nsleep(30)\nprint(\"監視開始!Ctrl+Cで停止\")\n\ntry:\n    while True:\n        pir.wait_for_motion()  # 動きを検知するまで待つ\n        count += 1\n        now = datetime.now().strftime(\"%H:%M:%S\")\n        print(f\"{now} ⚠️ 動きを検知!({count}回目)\")\n\n        # ピピピッと3回鳴らしてLEDを点滅\n        for _ in range(3):\n            buzzer.on()\n            led.on()\n            sleep(0.2)\n            buzzer.off()\n            led.off()\n            sleep(0.2)\n\n        pir.wait_for_no_motion()  # 動きがなくなるまで待つ\n        print(\"動きがなくなりました。監視を続けます\")\n\nexcept KeyboardInterrupt:\n    print(f\"\\n監視終了(検知回数: {count}回)\")\n\nfinally:\n    buzzer.off()\n    led.off()",
+      "setup": {
+        "connection": "PIR: VCC→5V, GND→GND, OUT→GPIO17\nブザー: +→GPIO18, −→GND\nGPIO27 → LED → 220Ω → GND",
+        "command": "python3 pir_alarm.py",
+        "notes": "Raspberry Pi OS には gpiozero が最初から入っているので、インストール不要です。\n(Pi 5 / Pi 4 どちらでも動きます)\n\n※PIRは電源を入れてから安定するまで30秒〜1分かかります\n※PIRのオレンジ色のつまみで、感度と検知後のON時間を調整できます"
+      },
+      "challenges": [
+        "検知した時刻をファイルに記録しよう",
+        "夜(18時〜6時)だけ鳴るようにしよう(ヒント: datetime.now().hour)"
+      ]
+    },
+    {
+      "id": "reaction-game",
+      "title": "⚡ 反応速度ゲーム",
+      "description": "LEDが光ったら素早くボタンを押すゲームです。5回の平均とベスト記録を表示します。フライング判定つき!",
+      "difficulty": "初級",
+      "tags": [
+        "ゲーム",
+        "ボタン",
+        "LED",
+        "gpiozero"
+      ],
+      "filename": "reaction_game.py",
+      "parts": [
+        "LED×1",
+        "抵抗 220Ω×1",
+        "タクトスイッチ×1"
+      ],
+      "code": "from gpiozero import LED, Button\nfrom time import sleep, perf_counter\nimport random\n\n# LED=GPIO17, ボタン=GPIO22\nled = LED(17)\nbutton = Button(22)\n\nROUNDS = 5  # 何回勝負するか\nresults = []\n\nprint(\"⚡ 反応速度ゲーム ⚡\")\nprint(\"LEDが光ったら、できるだけ速くボタンを押してください!\")\nprint(\"光る前に押すとフライングです\")\n\ntry:\n    for round_no in range(1, ROUNDS + 1):\n        print(f\"\\n--- 第{round_no}回 --- 準備...\")\n        sleep(1)\n\n        # 2〜5秒のランダムな時間待つ(その間に押したらフライング)\n        wait = random.uniform(2, 5)\n        if button.wait_for_press(timeout=wait):\n            print(\"❌ フライング!\")\n            button.wait_for_release()\n            continue\n\n        led.on()\n        start = perf_counter()\n        button.wait_for_press()\n        reaction = perf_counter() - start\n        led.off()\n\n        results.append(reaction)\n        print(f\"⏱️ {reaction:.3f} 秒\")\n        button.wait_for_release()\n\n    print(\"\\n===== 結果 =====\")\n    if results:\n        print(f\"ベスト記録: {min(results):.3f} 秒\")\n        print(f\"平均: {sum(results) / len(results):.3f} 秒\")\n    else:\n        print(\"記録なし(全部フライング!)\")\n\nexcept KeyboardInterrupt:\n    print(\"\\nゲーム終了\")\n\nfinally:\n    led.off()",
+      "setup": {
+        "connection": "GPIO17 → LED → 220Ω → GND\nGPIO22 → ボタン → GND",
+        "command": "python3 reaction_game.py",
+        "notes": "Raspberry Pi OS には gpiozero が最初から入っているので、インストール不要です。\n(Pi 5 / Pi 4 どちらでも動きます)"
+      },
+      "challenges": [
+        "ボタンを2つにして、2人対戦モードを作ろう",
+        "記録をファイルに保存して、クラスのランキングを作ろう"
+      ]
+    },
+    {
+      "id": "melody",
+      "title": "🎵 ブザーでメロディ演奏",
+      "description": "パッシブブザーで「かえるの歌」を演奏します。PWMで周波数を変えると音の高さが変わるしくみを学べます。",
+      "difficulty": "中級",
+      "tags": [
+        "ブザー",
+        "PWM",
+        "音楽",
+        "gpiozero"
+      ],
+      "filename": "melody.py",
+      "parts": [
+        "パッシブブザー×1(裏が緑の基板で、シールが貼っていない方)"
+      ],
+      "code": "from gpiozero import TonalBuzzer\nfrom time import sleep\n\n# パッシブブザー(圧電スピーカー)をGPIO18に接続\nbuzzer = TonalBuzzer(18)\n\n# かえるの歌 (音, 長さ)  音名: C=ド D=レ E=ミ F=ファ G=ソ A=ラ B=シ, 数字はオクターブ\n# None は休符\nmelody = [\n    (\"C4\", 1), (\"D4\", 1), (\"E4\", 1), (\"F4\", 1), (\"E4\", 1), (\"D4\", 1), (\"C4\", 2),\n    (\"E4\", 1), (\"F4\", 1), (\"G4\", 1), (\"A4\", 1), (\"G4\", 1), (\"F4\", 1), (\"E4\", 2),\n    (\"C4\", 2), (\"C4\", 2), (\"C4\", 2), (\"C4\", 2),\n    (\"C4\", 0.5), (\"C4\", 0.5), (\"D4\", 0.5), (\"D4\", 0.5),\n    (\"E4\", 0.5), (\"E4\", 0.5), (\"F4\", 0.5), (\"F4\", 0.5),\n    (\"E4\", 1), (\"D4\", 1), (\"C4\", 2),\n]\n\nTEMPO = 0.4  # 1拍の長さ(秒)。小さくすると速くなる\n\nprint(\"🐸 かえるの歌を演奏します!Ctrl+Cで停止\")\n\ntry:\n    for note, beats in melody:\n        if note is None:\n            buzzer.stop()\n        else:\n            print(note, end=\" \", flush=True)\n            buzzer.play(note)\n        sleep(beats * TEMPO * 0.9)\n        buzzer.stop()               # 同じ音が続くときに区切るため少し止める\n        sleep(beats * TEMPO * 0.1)\n    print(\"\\n演奏終了!\")\n\nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")\n\nfinally:\n    buzzer.stop()",
+      "setup": {
+        "connection": "ブザー: +→GPIO18, −→GND",
+        "command": "python3 melody.py",
+        "notes": "Raspberry Pi OS には gpiozero が最初から入っているので、インストール不要です。\n(Pi 5 / Pi 4 どちらでも動きます)\n\n※アクティブブザー(シール付き・裏が黒く埋まっている方)では音階が出ません\n※出せる音は A3(ラ)〜A5(ラ)の2オクターブです"
+      },
+      "challenges": [
+        "好きな曲の楽譜を音名に直して演奏しよう",
+        "ボタンを8個つないで「電子ピアノ」を作ろう"
+      ]
+    },
+    {
+      "id": "dice-7seg",
+      "title": "🎲 7セグLEDで電子サイコロ",
+      "description": "ボタンを押すと7セグメントLEDの数字がコロコロ変わり、サイコロの目が決まります。",
+      "difficulty": "中級",
+      "tags": [
+        "7セグメント",
+        "ボタン",
+        "ゲーム",
+        "gpiozero"
+      ],
+      "filename": "dice_7seg.py",
+      "parts": [
+        "7セグメントLED(1桁)×1",
+        "抵抗 220Ω×7",
+        "タクトスイッチ×1"
+      ],
+      "code": "from gpiozero import LEDCharDisplay, Button\nfrom time import sleep\nimport random\n\n# 1桁の7セグメントLED(カソードコモン)\n# a=GPIO5, b=GPIO6, c=GPIO13, d=GPIO19, e=GPIO26, f=GPIO16, g=GPIO20\n# アノードコモンの場合は active_high=False を追加してください\ndisplay = LEDCharDisplay(5, 6, 13, 19, 26, 16, 20)\nbutton = Button(21)  # サイコロを振るボタン\n\nprint(\"🎲 電子サイコロ\")\nprint(\"ボタンを押すとサイコロを振ります。Ctrl+Cで停止\")\n\ntry:\n    # 最初に 0〜9 を順番に表示して、全部の線が光るか確認\n    for n in range(10):\n        display.value = str(n)\n        sleep(0.3)\n    display.value = \" \"  # 消して待つ\n\n    while True:\n        print(\"ボタンを押してね\")\n        button.wait_for_press()\n\n        # コロコロ転がる演出(だんだん遅くなる)\n        delay = 0.03\n        while delay < 0.3:\n            display.value = str(random.randint(1, 6))\n            sleep(delay)\n            delay *= 1.15\n\n        result = random.randint(1, 6)\n        display.value = str(result)\n        print(f\"出た目: {result}\")\n        button.wait_for_release()\n\nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")\n\nfinally:\n    display.off()",
+      "setup": {
+        "connection": "7セグの各セグメント → 220Ω → GPIO\na→GPIO5, b→GPIO6, c→GPIO13, d→GPIO19\ne→GPIO26, f→GPIO16, g→GPIO20\n共通ピン(COM) → GND(カソードコモン)\nボタン: GPIO21 → ボタン → GND",
+        "command": "python3 dice_7seg.py",
+        "notes": "Raspberry Pi OS には gpiozero が最初から入っているので、インストール不要です。\n(Pi 5 / Pi 4 どちらでも動きます)\n\n※最初に0〜9が順番に表示されます。うまく表示されない数字があれば配線を確認してください\n※アノードコモンの7セグは COM を3.3Vにつなぎ、コードに active_high=False を追加"
+      },
+      "challenges": [
+        "9から0までのカウントダウンタイマーを作ろう",
+        "ゾロ目が出たらブザーを鳴らす「すごろく」を作ろう"
+      ]
+    },
+    {
+      "id": "distance-bar",
+      "title": "📊 LEDバーグラフ距離メーター",
+      "description": "超音波センサーで測った距離を、10個並んだLEDバーグラフで表示します。近づくほどたくさん光ります。",
+      "difficulty": "中級",
+      "tags": [
+        "超音波センサー",
+        "LEDバーグラフ",
+        "距離測定",
+        "gpiozero"
+      ],
+      "filename": "distance_bar.py",
+      "parts": [
+        "超音波センサー HC-SR04",
+        "LEDバーグラフ(10個)",
+        "抵抗 220Ω×10",
+        "抵抗 1kΩ・2kΩ(分圧用)"
+      ],
+      "code": "from gpiozero import DigitalInputDevice, DigitalOutputDevice, LEDBarGraph\nimport time\n\n# 超音波センサー(TRIG=GPIO23, ECHO=GPIO24 ※ECHOは分圧回路を通す)\ntrig = DigitalOutputDevice(23)\necho = DigitalInputDevice(24)\n\n# LEDバーグラフ(10個のLED)。近いほどたくさん光る\nbar = LEDBarGraph(17, 27, 22, 5, 6, 13, 19, 26, 12, 16)\n\nNEAR = 5   # この距離(cm)以下で全部点灯\nFAR = 50   # この距離(cm)以上で全部消灯\n\ndef measure_distance():\n    \"\"\"超音波センサーで距離(cm)を測る(失敗したらNone)\"\"\"\n    trig.on()\n    time.sleep(0.00001)\n    trig.off()\n\n    timeout = time.perf_counter() + 0.1\n    while echo.value == 0:\n        if time.perf_counter() > timeout:\n            return None\n    start = time.perf_counter()\n\n    timeout = time.perf_counter() + 0.1\n    while echo.value == 1:\n        if time.perf_counter() > timeout:\n            return None\n    end = time.perf_counter()\n\n    return (end - start) * 34300 / 2\n\nprint(\"📊 距離メーター!手を近づけてみよう。Ctrl+Cで停止\")\n\ntry:\n    while True:\n        dist = measure_distance()\n        if dist is None:\n            print(\"測定失敗\")\n        else:\n            # 距離を 0.0(遠い)〜1.0(近い)に変換してバーに表示\n            level = (FAR - dist) / (FAR - NEAR)\n            level = max(0, min(1, level))\n            bar.value = level\n            print(f\"距離: {dist:5.1f} cm  {'█' * round(level * 10)}\")\n        time.sleep(0.1)\n\nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")\n\nfinally:\n    bar.off()",
+      "setup": {
+        "connection": "【超音波センサー】VCC→5V, GND→GND, TRIG→GPIO23\nECHO → 1kΩ → GPIO24(GPIO24とGNDの間に2kΩ)\n\n【LEDバーグラフ】各LEDの+ → GPIO、− → 220Ω → GND\nGPIO17, 27, 22, 5, 6, 13, 19, 26, 12, 16 の順",
+        "command": "python3 distance_bar.py",
+        "notes": "Raspberry Pi OS には gpiozero が最初から入っているので、インストール不要です。\n(Pi 5 / Pi 4 どちらでも動きます)\n\n⚠️ ECHOピンは5Vなので、必ず分圧回路で3.3Vに下げてください"
+      },
+      "challenges": [
+        "NEAR と FAR の値を変えて、測れる範囲を変えよう",
+        "20cm以内でブザーが鳴る「駐車センサー」にしよう"
+      ]
+    },
+    {
+      "id": "stepper-window",
+      "title": "🏠 ステッピングモーターで温室の窓開閉",
+      "description": "ステッピングモーターを決まった角度だけ正確に回して、温室の天窓を開け閉めするしくみを再現します。",
+      "difficulty": "中級",
+      "tags": [
+        "モーター",
+        "ステッピングモーター",
+        "農業",
+        "gpiozero"
+      ],
+      "filename": "stepper_window.py",
+      "parts": [
+        "ステッピングモーター 28BYJ-48",
+        "ドライバ基板 ULN2003",
+        "(あれば)電源モジュール"
+      ],
+      "code": "from gpiozero import OutputDevice\nfrom time import sleep\n\n# ステッピングモーター(28BYJ-48)+ドライバ(ULN2003)\n# IN1=GPIO17, IN2=GPIO18, IN3=GPIO27, IN4=GPIO22\ncoils = [OutputDevice(17), OutputDevice(18), OutputDevice(27), OutputDevice(22)]\n\n# 半ステップ駆動の順番(1=電流を流す)\nSEQUENCE = [\n    [1, 0, 0, 0],\n    [1, 1, 0, 0],\n    [0, 1, 0, 0],\n    [0, 1, 1, 0],\n    [0, 0, 1, 0],\n    [0, 0, 1, 1],\n    [0, 0, 0, 1],\n    [1, 0, 0, 1],\n]\nSTEPS_PER_TURN = 4096  # 1回転に必要なステップ数(半ステップ駆動)\n\ndef release():\n    \"\"\"全部のコイルを止める(モーターが熱くならないように)\"\"\"\n    for coil in coils:\n        coil.off()\n\ndef rotate(degrees, delay=0.0015):\n    \"\"\"指定した角度だけ回す(マイナスで逆回転)\"\"\"\n    steps = int(abs(degrees) / 360 * STEPS_PER_TURN)\n    order = SEQUENCE if degrees > 0 else SEQUENCE[::-1]\n    for i in range(steps):\n        pattern = order[i % len(order)]\n        for coil, value in zip(coils, pattern):\n            coil.value = value\n        sleep(delay)\n    release()\n\nprint(\"🏠 温室の窓 開閉デモ!Ctrl+Cで停止\")\n\ntry:\n    while True:\n        print(\"窓を開けます(90度)\")\n        rotate(90)\n        sleep(2)\n\n        print(\"窓を閉めます(-90度)\")\n        rotate(-90)\n        sleep(2)\n\nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")\n\nfinally:\n    release()",
+      "setup": {
+        "connection": "ULN2003: IN1→GPIO17, IN2→GPIO18, IN3→GPIO27, IN4→GPIO22\nULN2003: +(5V)→5V, −→GND\nモーターのコネクタ → ULN2003の白いソケット",
+        "command": "python3 stepper_window.py",
+        "notes": "Raspberry Pi OS には gpiozero が最初から入っているので、インストール不要です。\n(Pi 5 / Pi 4 どちらでも動きます)\n\n※モーターは電流が多いので、できればキットの電源モジュールから5Vを取ってください(GNDはラズパイと共通にする)\n※回らずに震えるだけのときは、IN1〜IN4の順番を確認してください"
+      },
+      "challenges": [
+        "delay の値を変えて、速さと力の関係を調べよう",
+        "温度センサーと組み合わせて、28℃以上で窓が開くようにしよう"
+      ]
+    },
+    {
+      "id": "keypad-safe",
+      "title": "🔐 キーパッドで電子金庫",
+      "description": "4×4キーパッドで暗証番号を入力し、正しければ緑LED、まちがいなら赤LEDが点滅します。キーパッドを1行ずつ調べる「スキャン」のしくみを学べます。",
+      "difficulty": "上級",
+      "tags": [
+        "キーパッド",
+        "LED",
+        "セキュリティ",
+        "gpiozero"
+      ],
+      "filename": "keypad_safe.py",
+      "parts": [
+        "4×4メンブレンキーパッド",
+        "LED 緑・赤 各1",
+        "抵抗 220Ω×2"
+      ],
+      "code": "from gpiozero import DigitalOutputDevice, DigitalInputDevice, LED\nfrom time import sleep\n\n# 4x4キーパッド\n# 行(R1〜R4)=GPIO5, 6, 13, 19 / 列(C1〜C4)=GPIO12, 16, 20, 21\nrows = [DigitalOutputDevice(p, initial_value=True) for p in (5, 6, 13, 19)]\ncols = [DigitalInputDevice(p, pull_up=True) for p in (12, 16, 20, 21)]\n\nKEYS = [\n    [\"1\", \"2\", \"3\", \"A\"],\n    [\"4\", \"5\", \"6\", \"B\"],\n    [\"7\", \"8\", \"9\", \"C\"],\n    [\"*\", \"0\", \"#\", \"D\"],\n]\n\ngreen = LED(17)  # 解錠ランプ\nred = LED(27)    # 施錠ランプ\n\nPASSWORD = \"1234\"  # 暗証番号\n\ndef read_key():\n    \"\"\"押されたキーを返す(押されていなければ None)\"\"\"\n    for r, row in enumerate(rows):\n        row.off()  # 調べる行だけLOWにする\n        for c, col in enumerate(cols):\n            if col.is_active:  # その列がLOWになっていれば押されている\n                row.on()\n                return KEYS[r][c]\n        row.on()\n    return None\n\ndef wait_key():\n    \"\"\"キーが押されて離されるまで待ち、そのキーを返す\"\"\"\n    key = None\n    while key is None:\n        key = read_key()\n        sleep(0.02)\n    while read_key() is not None:  # 離されるまで待つ(チャタリング対策)\n        sleep(0.02)\n    return key\n\nprint(\"🔐 電子金庫\")\nprint(\"暗証番号を入力して # で決定、* でやり直し。Ctrl+Cで停止\")\nred.on()\nentered = \"\"\n\ntry:\n    while True:\n        key = wait_key()\n\n        if key == \"*\":\n            entered = \"\"\n            print(\"\\nクリアしました\")\n        elif key == \"#\":\n            if entered == PASSWORD:\n                print(\"\\n✅ 解錠!\")\n                red.off()\n                green.on()\n                sleep(3)\n                green.off()\n                red.on()\n                print(\"🔒 施錠しました\")\n            else:\n                print(\"\\n❌ 暗証番号がちがいます\")\n                for _ in range(3):\n                    red.off()\n                    sleep(0.15)\n                    red.on()\n                    sleep(0.15)\n            entered = \"\"\n        else:\n            entered += key\n            print(\"*\", end=\"\", flush=True)  # 入力した数字は画面に出さない\n\nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")\n\nfinally:\n    green.off()\n    red.off()",
+      "setup": {
+        "connection": "キーパッドの8本の線(左から)\nR1→GPIO5, R2→GPIO6, R3→GPIO13, R4→GPIO19\nC1→GPIO12, C2→GPIO16, C3→GPIO20, C4→GPIO21\nGPIO17 → 緑LED → 220Ω → GND\nGPIO27 → 赤LED → 220Ω → GND",
+        "command": "python3 keypad_safe.py",
+        "notes": "Raspberry Pi OS には gpiozero が最初から入っているので、インストール不要です。\n(Pi 5 / Pi 4 どちらでも動きます)\n\n※暗証番号は 1234 です(コードの PASSWORD で変更できます)\n※押したキーと違う文字になるときは、行と列の線の順番を確認してください"
+      },
+      "challenges": [
+        "3回まちがえたら30秒間入力できなくしよう",
+        "サーボモーターを追加して、本当にカギが開くようにしよう"
+      ]
+    },
+    {
+      "id": "greenhouse-fan",
+      "title": "🌱 温室の自動換気システム",
+      "description": "温湿度センサーで温度を測り、暑くなったらリレーでファンを回します。ON/OFFを繰り返さないための「ヒステリシス」という工夫も学べます。",
+      "difficulty": "上級",
+      "tags": [
+        "センサー",
+        "リレー",
+        "IoT",
+        "農業",
+        "venv"
+      ],
+      "filename": "greenhouse_fan.py",
+      "parts": [
+        "DHT11(キットの青いセンサー)または DHT22",
+        "リレーモジュール×1",
+        "DCモーター+プロペラ(ファン)",
+        "電源モジュール"
+      ],
+      "code": "import time\nfrom datetime import datetime\nimport board\nimport adafruit_dht\nfrom gpiozero import OutputDevice\n\n# 温湿度センサー(DATA=GPIO4)\n# キット付属の青いセンサーは DHT11、白いセンサーは DHT22 です\ndht = adafruit_dht.DHT11(board.D4, use_pulseio=False)\n\n# リレー(IN=GPIO17)。リレーの先にファン(DCモーター)をつなぐ\n# 「ON」と表示されてもリレーが動かず、「OFF」で動く場合は False に変更\nRELAY_ACTIVE_HIGH = True\nfan = OutputDevice(17, active_high=RELAY_ACTIVE_HIGH)\n\nON_TEMP = 28.0   # この温度以上でファンON\nOFF_TEMP = 26.0  # この温度以下でファンOFF(ON/OFFを繰り返さないよう差をつける)\n\nprint(\"🌱 温室 自動換気システム 起動!Ctrl+Cで停止\")\nprint(f\"{ON_TEMP}℃以上でファンON / {OFF_TEMP}℃以下でファンOFF\")\n\ntry:\n    while True:\n        now = datetime.now().strftime(\"%H:%M:%S\")\n        try:\n            temp = dht.temperature\n            humi = dht.humidity\n            if temp is None or humi is None:\n                raise RuntimeError(\"値を取得できませんでした\")\n\n            if temp >= ON_TEMP and not fan.is_active:\n                fan.on()\n                print(f\"{now} 🔥 暑い!ファンON\")\n            elif temp <= OFF_TEMP and fan.is_active:\n                fan.off()\n                print(f\"{now} 😌 涼しくなったのでファンOFF\")\n\n            state = \"ON\" if fan.is_active else \"OFF\"\n            print(f\"{now} 温度: {temp:.1f}℃  湿度: {humi:.1f}%  ファン: {state}\")\n\n        except RuntimeError as e:\n            print(f\"{now} 読み取り失敗: {e.args[0]}\")\n\n        time.sleep(2)\n\nexcept KeyboardInterrupt:\n    print(\"\\nシステム停止\")\n\nfinally:\n    fan.off()\n    dht.exit()",
+      "setup": {
+        "connection": "DHT11: VCC→3.3V, GND→GND, DATA→GPIO4\nリレー: VCC→5V, GND→GND, IN→GPIO17\nリレーの COM と NO の間に、ファンの電源線(+)をはさむ\nファンの電源は電源モジュールから取る",
+        "command": "source ~/rasp-env/bin/activate\npython greenhouse_fan.py",
+        "notes": "【最初に1回だけ】ページ上部「はじめに」②で仮想環境 ~/rasp-env を作ってください\n\n⚠️ リレーには家庭用コンセント(100V)を絶対につながないでください。感電の危険があります。授業では電池や電源モジュールの5Vで動くものだけにします\n※センサーに息を吹きかけたり手で温めると、温度が上がってファンが回ります"
+      },
+      "challenges": [
+        "ON_TEMP と OFF_TEMP を同じ値にすると何が起きるか試して、ヒステリシスの大切さを考えよう",
+        "湿度が80%以上のときもファンを回すようにしよう"
+      ]
+    },
+    {
+      "id": "data-logger",
+      "title": "📈 温湿度データロガー(CSV記録)",
+      "description": "温湿度を一定時間ごとにCSVファイルに記録します。表計算ソフトで開けばグラフにでき、ハウスの環境を記録・分析できます。",
+      "difficulty": "上級",
+      "tags": [
+        "センサー",
+        "IoT",
+        "データ",
+        "農業",
+        "venv"
+      ],
+      "filename": "data_logger.py",
+      "parts": [
+        "DHT22 または DHT11"
+      ],
+      "code": "import csv\nimport os\nimport time\nfrom datetime import datetime\nimport board\nimport adafruit_dht\n\n# 温湿度センサー(DATA=GPIO4)。DHT11を使う場合は DHT11 に変更\ndht = adafruit_dht.DHT22(board.D4, use_pulseio=False)\n\nFILENAME = os.path.expanduser(\"~/温湿度記録.csv\")  # 保存先(ホームフォルダ)\nINTERVAL = 10  # 記録する間隔(秒)。1時間ごとなら 3600\n\n# ファイルがなければ、1行目に見出しを書く\nif not os.path.exists(FILENAME):\n    with open(FILENAME, \"w\", newline=\"\", encoding=\"utf-8-sig\") as f:\n        csv.writer(f).writerow([\"日時\", \"温度(℃)\", \"湿度(%)\"])\n\nprint(f\"📈 データ記録開始!保存先: {FILENAME}\")\nprint(f\"{INTERVAL}秒ごとに記録します。Ctrl+Cで停止\")\n\ncount = 0\n\ntry:\n    while True:\n        try:\n            temp = dht.temperature\n            humi = dht.humidity\n            if temp is None or humi is None:\n                raise RuntimeError(\"値を取得できませんでした\")\n\n            now = datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\")\n            with open(FILENAME, \"a\", newline=\"\", encoding=\"utf-8-sig\") as f:\n                csv.writer(f).writerow([now, f\"{temp:.1f}\", f\"{humi:.1f}\"])\n\n            count += 1\n            print(f\"[{count}] {now}  {temp:.1f}℃  {humi:.1f}%  → 記録しました\")\n            time.sleep(INTERVAL)\n\n        except RuntimeError as e:\n            # 読み取り失敗はよくあるので、2秒後にやり直す\n            print(f\"読み取り失敗: {e.args[0]}(再試行します)\")\n            time.sleep(2)\n\nexcept KeyboardInterrupt:\n    print(f\"\\n記録終了(合計 {count} 件)\")\n\nfinally:\n    dht.exit()",
+      "setup": {
+        "connection": "VCC→3.3V, GND→GND, DATA→GPIO4",
+        "command": "source ~/rasp-env/bin/activate\npython data_logger.py",
+        "notes": "【最初に1回だけ】ページ上部「はじめに」②で仮想環境 ~/rasp-env を作ってください\n\n記録はホームフォルダの「温湿度記録.csv」に保存されます。\nラズパイの LibreOffice Calc や、Googleスプレッドシートで開いて、折れ線グラフにしてみましょう"
+      },
+      "challenges": [
+        "INTERVAL を 3600 にして、1日分の温度変化を記録しよう",
+        "1日の最高・最低・平均気温を計算するプログラムを作ろう"
+      ]
+    },
+    {
+      "id": "level-mpu6050",
+      "title": "📐 加速度センサーでデジタル水平器",
+      "description": "MPU6050(加速度・ジャイロセンサー)で重力の向きを測り、傾きの角度を表示します。水平になるとLEDが光ります。",
+      "difficulty": "上級",
+      "tags": [
+        "センサー",
+        "I2C",
+        "加速度",
+        "venv"
+      ],
+      "filename": "level_mpu6050.py",
+      "parts": [
+        "MPU6050 モジュール(GY-521)",
+        "LED×1",
+        "抵抗 220Ω×1"
+      ],
+      "code": "import math\nimport time\nfrom smbus2 import SMBus\nfrom gpiozero import LED\n\n# MPU6050(加速度・ジャイロセンサー)\n# VCC→3.3V, GND→GND, SDA→GPIO2, SCL→GPIO3\nADDRESS = 0x68\nbus = SMBus(1)\nbus.write_byte_data(ADDRESS, 0x6B, 0)  # スリープを解除して起動\n\ngreen = LED(17)  # 水平のとき光る\n\ndef read_word(reg):\n    \"\"\"2バイトのデータを読み、マイナスの値も扱える数にする\"\"\"\n    high = bus.read_byte_data(ADDRESS, reg)\n    low = bus.read_byte_data(ADDRESS, reg + 1)\n    value = (high << 8) | low\n    if value >= 0x8000:\n        value -= 0x10000\n    return value\n\ndef bar(angle):\n    \"\"\"角度を「---|---」のような目盛りで表す\"\"\"\n    pos = max(-10, min(10, round(angle / 3)))\n    line = [\"-\"] * 21\n    line[10] = \"|\"\n    line[pos + 10] = \"●\"\n    return \"\".join(line)\n\nprint(\"📐 デジタル水平器!Ctrl+Cで停止\")\n\ntry:\n    while True:\n        # 加速度(16384 = 1G)\n        ax = read_word(0x3B) / 16384\n        ay = read_word(0x3D) / 16384\n        az = read_word(0x3F) / 16384\n\n        # 重力の向きから傾きの角度を計算\n        roll = math.degrees(math.atan2(ay, az))\n        pitch = math.degrees(math.atan2(-ax, math.sqrt(ay * ay + az * az)))\n\n        level = abs(roll) < 2 and abs(pitch) < 2\n        green.value = level\n        mark = \"✅ 水平!\" if level else \"\"\n        print(f\"左右 {roll:6.1f}° {bar(roll)}  前後 {pitch:6.1f}° {bar(pitch)} {mark}\")\n        time.sleep(0.2)\n\nexcept KeyboardInterrupt:\n    print(\"\\nプログラム停止\")\n\nfinally:\n    green.off()\n    bus.close()",
+      "setup": {
+        "connection": "MPU6050: VCC→3.3V, GND→GND, SDA→GPIO2, SCL→GPIO3\nGPIO17 → LED → 220Ω → GND",
+        "command": "source ~/rasp-env/bin/activate\npython level_mpu6050.py",
+        "notes": "【最初に1回だけ】\n1. ページ上部「はじめに」②で仮想環境 ~/rasp-env を作る\n2. I2Cを有効化: sudo raspi-config nonint do_i2c 0\n3. sudo apt install -y i2c-tools\n4. 仮想環境に入って: pip install smbus2\n5. i2cdetect -y 1 で 68 が表示されるか確認"
+      },
+      "challenges": [
+        "傾きでRGB LEDの色が変わるようにしよう",
+        "急に動かしたことを検知する「転倒アラーム」を作ろう"
+      ]
     }
   ]
 }

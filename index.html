@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="愛媛県立西条農業高等学校のラズベリーパイプログラミング授業用コード共有サイト。LED制御、センサー、PWMなどのPythonサンプルコードを提供。">
-    <meta name="keywords" content="ラズベリーパイ,Raspberry Pi,Python,プログラミング,教育,GPIO,センサー,LED">
+    <meta name="keywords" content="ラズベリーパイ,Raspberry Pi,Python,プログラミング,教育,GPIO,センサー,LED,電子工作,農業IoT">
     <title>ラズパイプログラミング - コード共有サイト | 愛媛県立西条農業高等学校</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
     <style>
@@ -287,6 +287,38 @@
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
 
+        .parts {
+            background: #fffaf0;
+            border-left: 4px solid #ed8936;
+            padding: 10px 15px;
+            margin: 10px 0 15px;
+            border-radius: 5px;
+            color: #2d3748;
+            font-size: 14px;
+        }
+
+        .challenge {
+            background: #f0fff4;
+            border-left: 4px solid #38a169;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+        }
+
+        .challenge h4 {
+            color: #276749;
+            margin-bottom: 5px;
+        }
+
+        .challenge ol {
+            padding-left: 1.5em;
+            color: #2d3748;
+        }
+
+        .challenge li {
+            margin: 4px 0;
+        }
+
         /* はじめに(セットアップガイド)のスタイル */
         .setup-guide {
             background: rgba(255, 255, 255, 0.95);
@@ -501,7 +533,7 @@ sudo reboot</code></pre>
         <!-- 検索・フィルタリング機能 -->
         <div class="filter-section">
             <div class="search-container">
-                <input type="text" id="searchBox" placeholder="🔍 コードを検索..." onkeyup="filterCodes()">
+                <input type="text" id="searchBox" placeholder="🔍 コードや部品名で検索...(例: ブザー、農業)" onkeyup="filterCodes()">
             </div>
             <div class="filter-buttons">
                 <button class="filter-btn active" onclick="filterByDifficulty('all')">すべて</button>
@@ -541,7 +573,12 @@ sudo reboot</code></pre>
             fetch('codes.json')
                 .then(response => response.json())
                 .then(data => {
-                    allCodes = data.codes;
+                    // 初級 → 中級 → 上級 の順に並べる(同じ難易度ならJSONの順)
+                    const order = { '初級': 0, '中級': 1, '上級': 2 };
+                    allCodes = data.codes
+                        .map((code, i) => ({ code, i }))
+                        .sort((a, b) => ((order[a.code.difficulty] ?? 9) - (order[b.code.difficulty] ?? 9)) || (a.i - b.i))
+                        .map(item => item.code);
                     generateNavigation();
                     generateCodeSections();
                     if (window.Prism) Prism.highlightAll();  // CDNが読めなくてもコードは表示する
@@ -600,6 +637,7 @@ sudo reboot</code></pre>
             section.className = 'code-section';
             section.setAttribute('data-difficulty', code.difficulty);
             section.setAttribute('data-tags', code.tags.join(','));
+            section.setAttribute('data-parts', (code.parts || []).join(','));
             section.setAttribute('data-filename', code.filename);
 
             // タイトルと説明
@@ -620,6 +658,14 @@ sudo reboot</code></pre>
                 tagEl.textContent = tag;
                 section.appendChild(tagEl);
             });
+
+            // 使う部品
+            if (code.parts && code.parts.length) {
+                const parts = document.createElement('div');
+                parts.className = 'parts';
+                parts.innerHTML = '<strong>🧰 使う部品:</strong> ' + code.parts.map(escapeHtml).join('、');
+                section.appendChild(parts);
+            }
 
             // コードコンテナ
             const codeContainer = document.createElement('div');
@@ -686,6 +732,23 @@ sudo reboot</code></pre>
                 section.appendChild(usageNote);
             }
 
+            // チャレンジ課題
+            if (code.challenges && code.challenges.length) {
+                const challenge = document.createElement('div');
+                challenge.className = 'challenge';
+                const challengeTitle = document.createElement('h4');
+                challengeTitle.textContent = '🎯 チャレンジ課題';
+                challenge.appendChild(challengeTitle);
+                const list = document.createElement('ol');
+                code.challenges.forEach(text => {
+                    const item = document.createElement('li');
+                    item.textContent = text;
+                    list.appendChild(item);
+                });
+                challenge.appendChild(list);
+                section.appendChild(challenge);
+            }
+
             return section;
         }
 
@@ -702,9 +765,12 @@ sudo reboot</code></pre>
                 const tags = section.getAttribute('data-tags') ? section.getAttribute('data-tags').toLowerCase() : '';
                 const difficulty = section.getAttribute('data-difficulty') || '';
 
+                const parts = (section.getAttribute('data-parts') || '').toLowerCase();
+
                 const matchesSearch = title.includes(searchText) ||
                                     description.includes(searchText) ||
-                                    tags.includes(searchText);
+                                    tags.includes(searchText) ||
+                                    parts.includes(searchText);
                 const matchesDifficulty = currentDifficulty === 'all' || difficulty === currentDifficulty;
 
                 if (matchesSearch && matchesDifficulty) {
