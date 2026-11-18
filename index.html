@@ -405,6 +405,37 @@
             overflow-x: auto;
         }
 
+        .page-nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .page-nav a {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .page-nav a:hover {
+            background: #f7fafc;
+        }
+
+        .page-nav a.current {
+            background: #667eea;
+            color: white;
+        }
+
+        .setup-guide a {
+            color: #5a67d8;
+        }
+
         @media (max-width: 768px) {
             .grid {
                 grid-template-columns: 1fr;
@@ -458,6 +489,10 @@
         <header>
             <h1>🍓 ラズパイプログラミング</h1>
             <p class="subtitle">Pythonコード共有サイト - コピーして実行してみよう！</p>
+            <nav class="page-nav">
+                <a href="index.html" class="current" aria-current="page">🍓 Raspberry Pi(Pi 5 / Pi 4)</a>
+                <a href="pico.html">🟢 Raspberry Pi Pico</a>
+            </nav>
         </header>
 
         <!-- はじめに：ラズパイの準備 -->
