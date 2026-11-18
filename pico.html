@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="愛媛県立西条農業高等学校のラズベリーパイプログラミング授業用コード共有サイト(Raspberry Pi Pico 編)。Lチカ、土壌水分センサー、DHT22のMicroPythonサンプルコードを提供。">
+    <meta name="keywords" content="Raspberry Pi Pico,ラズパイPico,MicroPython,Thonny,プログラミング,教育,GPIO,センサー,LED,電子工作,農業IoT">
+    <title>ラズパイPico - MicroPythonコード共有サイト | 愛媛県立西条農業高等学校</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            color: #718096;
+            font-size: 1.2em;
+        }
+        
+        .code-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .grid > .code-section {
+            min-width: 0;  /* 長いコード行でスマホ画面がはみ出さないように */
+        }
+
+        .code-section:hover {
+            transform: translateY(-5px);
+        }
+        
+        .code-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+            padding-left: 15px;
+        }
+        
+        .code-description {
+            color: #4a5568;
+            margin-bottom: 15px;
+            padding-left: 15px;
+        }
+        
+        .code-container {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        .copy-btn, .download-btn {
+            position: absolute;
+            top: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.3s ease;
+            z-index: 10;
+        }
+
+        .copy-btn {
+            right: 130px;
+        }
+
+        .download-btn {
+            right: 10px;
+            background: #48bb78;
+        }
+
+        .copy-btn:hover {
+            background: #5a67d8;
+        }
+
+        .download-btn:hover {
+            background: #38a169;
+        }
+
+        .copy-btn.copied {
+            background: #48bb78;
+        }
+        
+        pre {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            overflow-x: auto;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        code {
+            font-family: 'Courier New', monospace;
+        }
+        
+        .usage-note {
+            background: #ebf8ff;
+            border-left: 4px solid #3182ce;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+        }
+        
+        .usage-note h4 {
+            color: #2c5282;
+            margin-bottom: 5px;
+        }
+        
+        .usage-note p {
+            color: #2d3748;
+            margin: 5px 0;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+        }
+        
+        .tag {
+            display: inline-block;
+            background: #e2e8f0;
+            color: #4a5568;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 30px;
+        }
+
+        /* 検索・フィルタリング機能のスタイル */
+        .filter-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-container {
+            margin-bottom: 15px;
+        }
+
+        #searchBox {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        #searchBox:focus {
+            border-color: #667eea;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background: #f7fafc;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .code-section.hidden {
+            display: none;
+        }
+
+        .no-results {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            color: #718096;
+            font-size: 1.2em;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* クイックナビゲーションのスタイル */
+        .quick-nav {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .quick-nav h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            text-align: center;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .parts {
+            background: #fffaf0;
+            border-left: 4px solid #ed8936;
+            padding: 10px 15px;
+            margin: 10px 0 15px;
+            border-radius: 5px;
+            color: #2d3748;
+            font-size: 14px;
+        }
+
+        .challenge {
+            background: #f0fff4;
+            border-left: 4px solid #38a169;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+        }
+
+        .challenge h4 {
+            color: #276749;
+            margin-bottom: 5px;
+        }
+
+        .challenge ol {
+            padding-left: 1.5em;
+            color: #2d3748;
+        }
+
+        .challenge li {
+            margin: 4px 0;
+        }
+
+        /* はじめに(セットアップガイド)のスタイル */
+        .setup-guide {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .setup-guide summary {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2d3748;
+            cursor: pointer;
+        }
+
+        .setup-guide h4 {
+            color: #2c5282;
+            margin: 20px 0 8px;
+        }
+
+        .setup-guide p, .setup-guide li {
+            color: #2d3748;
+            margin: 5px 0;
+        }
+
+        .setup-guide ul {
+            padding-left: 1.5em;
+        }
+
+        .setup-guide .code-container pre {
+            padding-top: 45px;
+        }
+
+        .setup-guide .copy-btn {
+            right: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #48bb78;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.75em;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        .trouble-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .trouble-table th, .trouble-table td {
+            border: 1px solid #e2e8f0;
+            padding: 8px 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .trouble-table th {
+            background: #edf2f7;
+        }
+
+        .trouble-table code, .usage-note code {
+            background: #edf2f7;
+            padding: 1px 4px;
+            border-radius: 3px;
+            word-break: break-all;
+        }
+
+        .command-block {
+            background: #2d3748;
+            color: #f7fafc;
+            border: none;
+            padding: 10px 15px;
+            margin-top: 5px;
+            font-size: 13px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        .page-nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .page-nav a {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .page-nav a:hover {
+            background: #f7fafc;
+        }
+
+        .page-nav a.current {
+            background: #667eea;
+            color: white;
+        }
+
+        .setup-guide a {
+            color: #5a67d8;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .filter-buttons {
+                flex-direction: column;
+            }
+
+            .filter-btn {
+                width: 100%;
+            }
+
+            .nav-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .copy-btn, .download-btn {
+                position: relative;
+                display: inline-block;
+                width: 48%;
+                margin-bottom: 10px;
+                right: auto;
+            }
+
+            .copy-btn {
+                margin-right: 4%;
+            }
+
+            pre {
+                font-size: 12px;
+                padding: 15px;
+            }
+
+            #searchBox {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🟢 ラズパイPico プログラミング</h1>
+            <p class="subtitle">MicroPythonコード共有サイト - コピーして実行してみよう！</p>
+            <nav class="page-nav">
+                <a href="index.html">🍓 Raspberry Pi(Pi 5 / Pi 4)</a>
+                <a href="pico.html" class="current" aria-current="page">🟢 Raspberry Pi Pico</a>
+            </nav>
+        </header>
+
+        <!-- はじめに：Picoの準備 -->
+        <details class="setup-guide" open>
+            <summary>🛠️ はじめに：Picoの準備<span class="badge">Pico / Pico W / Pico 2 対応</span></summary>
+
+            <p>このページのコードは <strong>MicroPython</strong>(マイコン用のPython)で書いています。Raspberry Pi の Python とは書き方が少しちがうので、<a href="index.html">Raspberry Pi 用のページ</a>のコードはそのままでは動きません。</p>
+
+            <h4>① Thonny を用意する</h4>
+            <ul>
+                <li><strong>Raspberry Pi で使う場合:</strong> メニュー →「プログラミング」→「Thonny」。最初から入っています。</li>
+                <li><strong>Windows / Mac で使う場合:</strong> <a href="https://thonny.org/" target="_blank" rel="noopener">thonny.org</a> からダウンロードしてインストールします。</li>
+            </ul>
+
+            <h4>② Pico に MicroPython を入れる ※最初に1回だけ</h4>
+            <ul>
+                <li>Pico の <strong>BOOTSEL ボタンを押したまま</strong> USBケーブルでパソコンにつなぎ、つないだらボタンをはなします。</li>
+                <li>Thonny の右下(「Python 3...」と書かれた部分)をクリック →「MicroPythonをインストールまたは更新」を選びます。</li>
+                <li>「variant」で自分の Pico(Raspberry Pi Pico / Pico W / Pico 2 など)を選んで「インストール」を押します。</li>
+                <li>うまくいかないときは、<a href="https://micropython.org/download/?vendor=Raspberry%20Pi" target="_blank" rel="noopener">micropython.org</a> から自分の機種の <code>.uf2</code> ファイルをダウンロードし、BOOTSELモードで表示される <code>RPI-RP2</code>(Pico 2 は <code>RP2350</code>)ドライブにドラッグしても入れられます。</li>
+            </ul>
+
+            <h4>③ Thonny と Pico をつなぐ</h4>
+            <ul>
+                <li>BOOTSEL を押さずに USB でつなぎ、Thonny の右下をクリック →「MicroPython (Raspberry Pi Pico)」を選びます。</li>
+                <li>下の「シェル」に <code>&gt;&gt;&gt;</code> と出れば接続できています。</li>
+                <li>このページのコードをコピーして Thonny に貼り付け、<strong>▶「実行」(F5)</strong>で動きます。止めるときは <strong>■「停止」</strong>です。</li>
+                <li>パソコンから抜いても(電池やUSB充電器で)動かしたいときは、「名前を付けて保存」→「Raspberry Pi Pico」→ <code>main.py</code> という名前で保存します。電源が入ると自動で動きます。</li>
+            </ul>
+
+            <h4>④ ピン番号の見かた</h4>
+            <p>コードの <code>Pin(15)</code> は <strong>GP15</strong> のことで、基板の端から数えた「20番ピン」とは別の番号です。基板の裏面に <code>GP15</code> などと印刷されているので、それを見て配線しましょう。このページでは配線に「GP15(20番ピン)」のように両方を書いています。</p>
+            <div class="table-wrap">
+            <table class="trouble-table">
+                <tr><th>名前</th><th>ピン番号</th><th>使いみち</th></tr>
+                <tr><td><code>3V3(OUT)</code></td><td>36番</td><td>センサーの電源(3.3V)</td></tr>
+                <tr><td><code>GND</code></td><td>3, 8, 13, 18, 23, 28, 33, 38番</td><td>マイナス(どれを使ってもOK)</td></tr>
+                <tr><td><code>GP15</code></td><td>20番</td><td>LED・DHT22 の DATA</td></tr>
+                <tr><td><code>GP26 / ADC0</code></td><td>31番</td><td>土壌水分センサーなどアナログ値の読み取り</td></tr>
+            </table>
+            </div>
+
+            <h4>⑤ うまくいかないとき</h4>
+            <div class="table-wrap">
+            <table class="trouble-table">
+                <tr><th>エラー・症状</th><th>原因と対処</th></tr>
+                <tr><td>Thonny で Pico が見つからない / <code>Couldn't find the device</code></td><td>USBケーブルが「充電専用」の可能性があります。データ通信できるケーブルに変えてください。MicroPython が入っていない場合は②をやり直します。</td></tr>
+                <tr><td><code>ImportError: no module named 'machine'</code></td><td>パソコンのPythonで実行しています。Thonny の右下で「MicroPython (Raspberry Pi Pico)」を選んでください。</td></tr>
+                <tr><td><code>ImportError: no module named 'gpiozero'</code> / <code>'RPi'</code></td><td>Raspberry Pi 用のコードです。Pico では <code>machine</code> モジュールを使うこのページのコードを使ってください。</td></tr>
+                <tr><td><code>Device is busy</code> / 実行できない</td><td>Pico で前のプログラム(<code>main.py</code> など)が動いています。Thonny の <strong>■「停止」</strong>を押してから実行してください。</td></tr>
+                <tr><td>DHT22で <code>OSError: [Errno 110] ETIMEDOUT</code></td><td>センサーから返事がありません。DATAのピン番号(GP15 = 20番ピン)、電源の向き、10kΩ の抵抗を確認してください。ときどき出るだけなら正常です。</td></tr>
+                <tr><td>土壌水分の値がずっと 0 や 65535 付近のまま</td><td>AOUT が GP26(31番ピン)につながっているか確認してください。センサーの電源は 3V3 につなぎます。</td></tr>
+            </table>
+            </div>
+        </details>
+
+        <!-- 検索・フィルタリング機能 -->
+        <div class="filter-section">
+            <div class="search-container">
+                <input type="text" id="searchBox" placeholder="🔍 コードや部品名で検索...(例: センサー、農業)" onkeyup="filterCodes()">
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="filterByDifficulty('all')">すべて</button>
+                <button class="filter-btn" onclick="filterByDifficulty('初級')">初級</button>
+                <button class="filter-btn" onclick="filterByDifficulty('中級')">中級</button>
+                <button class="filter-btn" onclick="filterByDifficulty('上級')">上級</button>
+            </div>
+        </div>
+
+        <!-- クイックナビゲーション -->
+        <div class="quick-nav">
+            <h3>📚 コード一覧</h3>
+            <div class="nav-grid" id="navGrid">
+                <!-- 動的に生成されます -->
+            </div>
+        </div>
+
+        <div class="grid" id="codeGrid">
+        </div>
+        
+        <footer>
+            <p>🎓 愛媛県立西条農業高等学校 プログラミング教室</p>
+            <p>作成日: 2026年11月(Raspberry Pi Pico・MicroPython)</p>
+        </footer>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <script>
+        // JSONからコードを読み込んで動的に生成
+        let allCodes = [];
+        let currentDifficulty = 'all';
+
+        // ページ読み込み時にJSONを取得
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('pico-codes.json')
+                .then(response => response.json())
+                .then(data => {
+                    // 初級 → 中級 → 上級 の順に並べる(同じ難易度ならJSONの順)
+                    const order = { '初級': 0, '中級': 1, '上級': 2 };
+                    allCodes = data.codes
+                        .map((code, i) => ({ code, i }))
+                        .sort((a, b) => ((order[a.code.difficulty] ?? 9) - (order[b.code.difficulty] ?? 9)) || (a.i - b.i))
+                        .map(item => item.code);
+                    generateNavigation();
+                    generateCodeSections();
+                    if (window.Prism) Prism.highlightAll();  // CDNが読めなくてもコードは表示する
+                })
+                .catch(error => {
+                    console.error('Error loading codes.json:', error);
+                    document.getElementById('codeGrid').innerHTML = '<div class="no-results">コードの読み込みに失敗しました。pico-codes.jsonファイルを確認してください。</div>';
+                });
+        });
+
+        // HTMLエスケープ(< や & をそのまま表示するため)
+        function escapeHtml(text) {
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // 改行と連続する空白を保ったままHTMLにする(配線図の位置ずれ防止)
+        function toHtml(text) {
+            return escapeHtml(text)
+                .replace(/ {2,}/g, m => '&nbsp;'.repeat(m.length))
+                .replace(/\n/g, '<br>');
+        }
+
+        // ナビゲーションを動的生成
+        function generateNavigation() {
+            const navGrid = document.getElementById('navGrid');
+            navGrid.innerHTML = '';
+
+            allCodes.forEach(code => {
+                const navItem = document.createElement('a');
+                navItem.href = '#' + code.id + '-section';
+                navItem.className = 'nav-item';
+                navItem.textContent = code.title;
+                navGrid.appendChild(navItem);
+            });
+        }
+
+        // コードセクションを動的生成
+        function generateCodeSections() {
+            const codeGrid = document.getElementById('codeGrid');
+            codeGrid.innerHTML = '';
+
+            allCodes.forEach(code => {
+                const section = createCodeSection(code);
+                codeGrid.appendChild(section);
+            });
+        }
+
+        // 個別のコードセクションを作成
+        function createCodeSection(code) {
+            const section = document.createElement('div');
+            section.id = code.id + '-section';
+            section.className = 'code-section';
+            section.setAttribute('data-difficulty', code.difficulty);
+            section.setAttribute('data-tags', code.tags.join(','));
+            section.setAttribute('data-parts', (code.parts || []).join(','));
+            section.setAttribute('data-filename', code.filename);
+
+            // タイトルと説明
+            const title = document.createElement('div');
+            title.className = 'code-title';
+            title.textContent = code.title;
+            section.appendChild(title);
+
+            const description = document.createElement('div');
+            description.className = 'code-description';
+            description.textContent = code.description;
+            section.appendChild(description);
+
+            // タグ
+            code.tags.forEach(tag => {
+                const tagEl = document.createElement('div');
+                tagEl.className = 'tag';
+                tagEl.textContent = tag;
+                section.appendChild(tagEl);
+            });
+
+            // 使う部品
+            if (code.parts && code.parts.length) {
+                const parts = document.createElement('div');
+                parts.className = 'parts';
+                parts.innerHTML = '<strong>🧰 使う部品:</strong> ' + code.parts.map(escapeHtml).join('、');
+                section.appendChild(parts);
+            }
+
+            // コードコンテナ
+            const codeContainer = document.createElement('div');
+            codeContainer.className = 'code-container';
+
+            // コピーボタン
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-btn';
+            copyBtn.textContent = '📋 コピー';
+            copyBtn.onclick = function() { copyCode(this, code.id); };
+            codeContainer.appendChild(copyBtn);
+
+            // ダウンロードボタン
+            const downloadBtn = document.createElement('button');
+            downloadBtn.className = 'download-btn';
+            downloadBtn.textContent = '💾 ダウンロード';
+            downloadBtn.onclick = function() { downloadCode(code.id, code.filename); };
+            codeContainer.appendChild(downloadBtn);
+
+            // コードブロック
+            const pre = document.createElement('pre');
+            const codeEl = document.createElement('code');
+            codeEl.id = code.id;
+            codeEl.className = 'language-python';
+            codeEl.textContent = code.code;
+            pre.appendChild(codeEl);
+            codeContainer.appendChild(pre);
+
+            section.appendChild(codeContainer);
+
+            // セットアップ情報
+            if (code.setup) {
+                const usageNote = document.createElement('div');
+                usageNote.className = 'usage-note';
+
+                const setupTitle = document.createElement('h4');
+                setupTitle.textContent = '🔧 接続方法・セットアップ';
+                usageNote.appendChild(setupTitle);
+
+                if (code.setup.connection) {
+                    const connection = document.createElement('p');
+                    connection.innerHTML = '<strong>接続:</strong><br>' + toHtml(code.setup.connection);
+                    usageNote.appendChild(connection);
+                }
+
+                if (code.setup.notes) {
+                    const notes = document.createElement('p');
+                    notes.innerHTML = '<strong>注意:</strong><br>' + toHtml(code.setup.notes);
+                    usageNote.appendChild(notes);
+                }
+
+                const filename = document.createElement('p');
+                filename.innerHTML = '<strong>📝 ファイル名:</strong> <code>' + escapeHtml(code.filename) + '</code>';
+                usageNote.appendChild(filename);
+
+                const command = document.createElement('p');
+                command.innerHTML = '<strong>実行方法:</strong>';
+                const commandPre = document.createElement('pre');
+                commandPre.className = 'command-block';
+                commandPre.textContent = code.setup.command;
+                command.appendChild(commandPre);
+                usageNote.appendChild(command);
+
+                section.appendChild(usageNote);
+            }
+
+            // チャレンジ課題
+            if (code.challenges && code.challenges.length) {
+                const challenge = document.createElement('div');
+                challenge.className = 'challenge';
+                const challengeTitle = document.createElement('h4');
+                challengeTitle.textContent = '🎯 チャレンジ課題';
+                challenge.appendChild(challengeTitle);
+                const list = document.createElement('ol');
+                code.challenges.forEach(text => {
+                    const item = document.createElement('li');
+                    item.textContent = text;
+                    list.appendChild(item);
+                });
+                challenge.appendChild(list);
+                section.appendChild(challenge);
+            }
+
+            return section;
+        }
+
+        // 検索・フィルタリング機能
+
+        function filterCodes() {
+            const searchText = document.getElementById('searchBox').value.toLowerCase();
+            const sections = document.querySelectorAll('.code-section');
+            let visibleCount = 0;
+
+            sections.forEach(section => {
+                const title = section.querySelector('.code-title').textContent.toLowerCase();
+                const description = section.querySelector('.code-description').textContent.toLowerCase();
+                const tags = section.getAttribute('data-tags') ? section.getAttribute('data-tags').toLowerCase() : '';
+                const difficulty = section.getAttribute('data-difficulty') || '';
+
+                const parts = (section.getAttribute('data-parts') || '').toLowerCase();
+
+                const matchesSearch = title.includes(searchText) ||
+                                    description.includes(searchText) ||
+                                    tags.includes(searchText) ||
+                                    parts.includes(searchText);
+                const matchesDifficulty = currentDifficulty === 'all' || difficulty === currentDifficulty;
+
+                if (matchesSearch && matchesDifficulty) {
+                    section.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    section.classList.add('hidden');
+                }
+            });
+
+            // 検索結果なしメッセージの表示/非表示
+            updateNoResultsMessage(visibleCount);
+        }
+
+        function filterByDifficulty(difficulty) {
+            currentDifficulty = difficulty;
+
+            // ボタンのアクティブ状態を更新
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            filterCodes();
+        }
+
+        function updateNoResultsMessage(visibleCount) {
+            let noResultsMsg = document.querySelector('.no-results');
+
+            if (visibleCount === 0) {
+                if (!noResultsMsg) {
+                    noResultsMsg = document.createElement('div');
+                    noResultsMsg.className = 'no-results';
+                    noResultsMsg.textContent = '🔍 検索結果が見つかりませんでした';
+                    document.querySelector('.grid').appendChild(noResultsMsg);
+                }
+            } else {
+                if (noResultsMsg) {
+                    noResultsMsg.remove();
+                }
+            }
+        }
+
+        // ダウンロード機能
+        function downloadCode(codeId, filename) {
+            const code = document.getElementById(codeId).textContent;
+            const blob = new Blob([code], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            showNotification('ファイルをダウンロードしました: ' + filename);
+        }
+
+        // コピー機能
+        function copyCode(button, codeId) {
+            const code = document.getElementById(codeId).textContent;
+            
+            navigator.clipboard.writeText(code).then(function() {
+                // ボタンの表示を変更
+                button.textContent = 'コピー完了！';
+                button.classList.add('copied');
+                
+                // 2秒後に元に戻す
+                setTimeout(function() {
+                    button.textContent = '📋 コピー';
+                    button.classList.remove('copied');
+                }, 2000);
+                
+                // 成功メッセージを表示
+                showNotification('コードをコピーしました！');
+            }).catch(function(err) {
+                // フォールバック: テキスト選択
+                const range = document.createRange();
+                range.selectNode(document.getElementById(codeId));
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                
+                try {
+                    document.execCommand('copy');
+                    button.textContent = 'コピー完了！';
+                    button.classList.add('copied');
+                    
+                    setTimeout(function() {
+                        button.textContent = '📋 コピー';
+                        button.classList.remove('copied');
+                    }, 2000);
+                    
+                    showNotification('コードをコピーしました！');
+                } catch(e) {
+                    showNotification('コピーに失敗しました。手動で選択してコピーしてください。', true);
+                }
+                
+                window.getSelection().removeAllRanges();
+            });
+        }
+        
+        function showNotification(message, isError = false) {
+            // 通知要素を作成
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${isError ? '#e53e3e' : '#38a169'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 1000;
+                font-size: 14px;
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            // アニメーション用CSS
+            if (!document.getElementById('notification-styles')) {
+                const style = document.createElement('style');
+                style.id = 'notification-styles';
+                style.textContent = `
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOut {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(notification);
+            
+            // 3秒後に削除
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+        
+        // ページ読み込み後にシンタックスハイライトを適用
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.Prism) Prism.highlightAll();  // CDNが読めなくてもコードは表示する
+        });
+    </script>
+</body>
+</html>

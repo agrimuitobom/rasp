@@ -1,0 +1,87 @@
+{
+  "codes": [
+    {
+      "id": "pico-led-blink",
+      "title": "🔴 Lチカ(LED点滅)",
+      "description": "Pico本体のLEDを1秒ごとに点滅させる、MicroPythonの最初のプログラムです。外付けLEDに切りかえる方法もコメントに書いてあります。",
+      "difficulty": "初級",
+      "tags": [
+        "MicroPython",
+        "LED",
+        "GPIO"
+      ],
+      "filename": "led_blink.py",
+      "parts": [
+        "Raspberry Pi Pico(本体のLEDを使うので部品なしでOK)",
+        "外付けにする場合: LED×1、抵抗 220Ω×1"
+      ],
+      "code": "from machine import Pin\nimport time\n\n# Pico本体のLED(\"LED\"と書くと Pico / Pico W / Pico 2 どれでも使えます)\nled = Pin(\"LED\", Pin.OUT)\n\n# 外付けのLEDを使うときは、上の行を消して次の行の # を外す(GP15に接続)\n# led = Pin(15, Pin.OUT)\n\nprint(\"Lチカ開始!Thonnyの■(Stop)ボタンで停止\")\n\ntry:\n    while True:\n        led.on()\n        print(\"LED ON\")\n        time.sleep(1)\n\n        led.off()\n        print(\"LED OFF\")\n        time.sleep(1)\n\nexcept KeyboardInterrupt:\n    led.off()\n    print(\"プログラム停止\")\n",
+      "setup": {
+        "connection": "本体のLEDを使う場合: 配線なし(USBケーブルでパソコンにつなぐだけ)\n外付けLEDの場合: GP15(20番ピン) → 抵抗(220Ω) → LEDの長い足(+) → LEDの短い足(−) → GND(18番ピン)",
+        "command": "Thonnyでファイルを開いて ▶「実行」(F5)",
+        "notes": "MicroPython の machine モジュールを使います(インストール不要)。\nPico W / Pico 2 W では本体LEDが Wi-Fi チップにつながっていますが、Pin(\"LED\") と書けば同じように動きます。\nPC から抜いても動かしたいときは、Thonny の「名前を付けて保存」→「Raspberry Pi Pico」を選び、main.py という名前で保存します。"
+      },
+      "challenges": [
+        "点滅の速さを0.2秒にしてみよう",
+        "外付けLEDを2個つなぎ、交互に点滅させよう",
+        "3回速く・3回ゆっくり点滅する「モールス信号のSOS」を作ろう"
+      ]
+    },
+    {
+      "id": "pico-soil-moisture",
+      "title": "🌱 土壌水分センサー",
+      "description": "土壌水分センサーのアナログ値を ADC(アナログ→デジタル変換)で読み取り、水分を0〜100%で表示します。乾いているときは「水やりが必要!」と知らせます。",
+      "difficulty": "初級",
+      "tags": [
+        "MicroPython",
+        "センサー",
+        "ADC",
+        "農業"
+      ],
+      "filename": "soil_moisture.py",
+      "parts": [
+        "土壌水分センサー(容量式 v1.2 など・アナログ出力)",
+        "ジャンパーワイヤー(オス-メス)×3"
+      ],
+      "code": "from machine import Pin, ADC\nimport time\n\n# 土壌水分センサー(アナログ出力)を GP26(ADC0) に接続\nsensor = ADC(Pin(26))\n\n# ▼ 自分のセンサーで測った値に書きかえる(校正)\nDRY = 50000   # 空気中(カラカラ)のときの値\nWET = 20000   # コップの水に差したときの値\n# ※ 容量式センサーは「乾くほど値が大きく」なります\n#   抵抗式(フォーク型)センサーは逆なので、DRY と WET を入れかえてください\n\nprint(\"土壌水分の測定開始!Thonnyの■(Stop)ボタンで停止\")\n\ntry:\n    while True:\n        # 5回はかって平均すると値が安定する\n        total = 0\n        for i in range(5):\n            total += sensor.read_u16()   # 0 ~ 65535 の値\n            time.sleep(0.05)\n        raw = total // 5\n\n        # 0 ~ 100% に変換して、はみ出した分はおさえる\n        percent = (DRY - raw) * 100 / (DRY - WET)\n        percent = max(0, min(100, percent))\n\n        if percent < 30:\n            state = \"カラカラ 💧水やりが必要!\"\n        elif percent < 70:\n            state = \"ちょうどいい 🌱\"\n        else:\n            state = \"びしょびしょ 🌊\"\n\n        print(\"生の値: {:5d}  水分: {:5.1f}%  {}\".format(raw, percent, state))\n        time.sleep(1)\n\nexcept KeyboardInterrupt:\n    print(\"測定を停止しました\")\n",
+      "setup": {
+        "connection": "センサー VCC → 3V3(OUT)(36番ピン)\nセンサー GND → GND(38番ピン)\nセンサー AOUT → GP26 / ADC0(31番ピン)",
+        "command": "Thonnyでファイルを開いて ▶「実行」(F5)",
+        "notes": "⚠️ センサーの電源は 5V(VBUS)ではなく 3V3 につないでください。Picoの ADC に 3.3V を超える電圧が入ると壊れることがあります。\n\n【校正のしかた】\n1. センサーを空気中に置いて実行 →「生の値」を DRY に書く\n2. センサーをコップの水に差して実行 →「生の値」を WET に書く\n※ 水につけるのはセンサーの線(白いライン)より下までにしてください。\n\n抵抗式(フォーク型)センサーは土の中で電極がさびやすいので、長く使うなら容量式がおすすめです。"
+      },
+      "challenges": [
+        "水分が30%より少ないときだけ、本体のLEDを点灯させよう(Lチカのコードと合体!)",
+        "1分ごとに測るようにして、畑やプランターの水分の変化を観察しよう",
+        "ADC0〜ADC2(GP26〜GP28)にセンサーを3本つなぎ、3つの鉢を同時に測ろう"
+      ]
+    },
+    {
+      "id": "pico-dht22",
+      "title": "🌡️ 温湿度センサー(DHT22)",
+      "description": "DHT22 で温度と湿度を2秒ごとに測定します。MicroPython に最初から入っている dht モジュールを使うので、ライブラリのインストールは不要です。",
+      "difficulty": "中級",
+      "tags": [
+        "MicroPython",
+        "センサー",
+        "IoT",
+        "農業"
+      ],
+      "filename": "dht22.py",
+      "parts": [
+        "DHT22 または DHT11(キットの青いセンサー)",
+        "抵抗 10kΩ(モジュール基板つきなら不要)"
+      ],
+      "code": "from machine import Pin\nimport dht\nimport time\n\n# DHT22 の DATA を GP15 に接続\n# DHT11(青いセンサー)を使う場合は dht.DHT11 に変更\nsensor = dht.DHT22(Pin(15))\n\nprint(\"温湿度測定開始!Thonnyの■(Stop)ボタンで停止\")\ntime.sleep(2)  # 電源を入れてすぐはセンサーが準備中なので少し待つ\n\ntry:\n    while True:\n        try:\n            sensor.measure()            # 測定する\n            temp = sensor.temperature() # 温度(℃)\n            humi = sensor.humidity()    # 湿度(%)\n            print(\"温度: {:.1f}℃  湿度: {:.1f}%\".format(temp, humi))\n        except OSError:\n            # DHTはときどき読み取りに失敗する。次の回で再挑戦\n            print(\"読み取り失敗(もう一度測ります)\")\n\n        time.sleep(2)  # DHT22は2秒以上あけて測る\n\nexcept KeyboardInterrupt:\n    print(\"測定を停止しました\")\n",
+      "setup": {
+        "connection": "DHT22 VCC(+) → 3V3(OUT)(36番ピン)\nDHT22 DATA(OUT) → GP15(20番ピン)\nDHT22 GND(−) → GND(38番ピン)\n※ センサー単体(4本足)の場合は、VCC と DATA の間に 10kΩ の抵抗をつなぐ",
+        "command": "Thonnyでファイルを開いて ▶「実行」(F5)",
+        "notes": "dht モジュールは Pico 用の MicroPython に最初から入っています(pip などは不要)。\nDHT22は2秒以上あけないと正しく測れません。\nときどき「読み取り失敗」と出るのはDHTではよくあることです。ずっと失敗する場合は、DATAのピン番号(GP15 = 20番ピン)と10kΩの抵抗を確認してください。\n4本足のセンサー単体は、穴のあいた面を手前にして左から VCC / DATA / (つながない) / GND です。"
+      },
+      "challenges": [
+        "温度が30℃を超えたら本体のLEDを点灯させよう",
+        "不快指数 0.81×温度 + 0.01×湿度×(0.99×温度 − 14.3) + 46.3 を計算して表示しよう",
+        "土壌水分センサーとDHT22を同時につなぎ、温度・湿度・土の水分をまとめて表示しよう"
+      ]
+    }
+  ]
+}

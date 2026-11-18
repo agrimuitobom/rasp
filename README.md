@@ -11,14 +11,17 @@
 - **動的コンテンツ**: JSONファイルから自動生成
 - **使う部品・チャレンジ課題**: 各作品に必要な部品と、発展課題を表示
 - **21作品**: SunFounder スターターキットの部品で作れる作品（信号機、鳥獣害対策アラーム、温室の自動換気など）
+- **Raspberry Pi Pico 編**（`pico.html`）: MicroPython で Lチカ・土壌水分センサー・温湿度センサー(DHT22)
 
 ## 📁 ファイル構成
 
 ```
 rasp/
-├── index.html      # メインページ
+├── index.html      # メインページ（Raspberry Pi 5 / Pi 4）
+├── pico.html       # Raspberry Pi Pico 用ページ（MicroPython）
 ├── admin.html      # コード追加用管理画面
-├── codes.json      # コードデータ（JSON形式）
+├── codes.json      # コードデータ（Raspberry Pi 用）
+├── pico-codes.json # コードデータ（Pico 用・形式は codes.json と同じ）
 └── README.md       # このファイル
 ```
 
@@ -54,6 +57,14 @@ pip install adafruit-circuitpython-dht
 詳しい手順とトラブル対処は、サイト上部の「🛠️ はじめに：ラズパイの準備」にまとめています。
 
 > **コードを追加する先生へ**: Pi 5 で動かすため、`RPi.GPIO` ではなく `gpiozero` を使って書いてください。
+
+### 🟢 Raspberry Pi Pico 編
+
+[Pico 用ページ](https://agrimuitobom.github.io/rasp/pico.html)では、**MicroPython** で書いたコードを Thonny で実行します。各ページ上部のボタンで切り替えられます。
+
+- Thonny の右下 →「MicroPythonをインストールまたは更新」で Pico に MicroPython を入れる（最初の1回だけ）
+- GPIO は `machine` モジュール、DHT22 は MicroPython 内蔵の `dht` モジュールを使うので、ライブラリのインストールは不要
+- Pico のコードを追加するときは `pico-codes.json` を直接編集してください（GitHub Issue・管理画面からの追加は `codes.json` 用です）
 
 ---
 
