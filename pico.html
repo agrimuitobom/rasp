@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="愛媛県立西条農業高等学校のラズベリーパイプログラミング授業用コード共有サイト(Raspberry Pi Pico 編)。Lチカ、土壌水分センサー、DHT22のMicroPythonサンプルコードを提供。">
+    <meta name="description" content="愛媛県立西条農業高等学校のラズベリーパイプログラミング授業用コード共有サイト(Raspberry Pi Pico 編)。Lチカ、土壌水分センサー、DHT22、LCD1602のMicroPythonサンプルコードを提供。">
     <meta name="keywords" content="Raspberry Pi Pico,ラズパイPico,MicroPython,Thonny,プログラミング,教育,GPIO,センサー,LED,電子工作,農業IoT">
     <title>ラズパイPico - MicroPythonコード共有サイト | 愛媛県立西条農業高等学校</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
@@ -401,6 +401,18 @@
             font-size: 13px;
         }
 
+        .wiring-diagram {
+            background: white;
+            margin: 5px 0 10px;
+            padding: 12px 15px;
+            font-size: 13px;
+            line-height: 1.35;
+        }
+
+        .wiring-diagram, .wiring-diagram * {
+            font-family: 'Courier New', Consolas, monospace;
+        }
+
         .table-wrap {
             overflow-x: auto;
         }
@@ -528,8 +540,11 @@
             <div class="table-wrap">
             <table class="trouble-table">
                 <tr><th>名前</th><th>ピン番号</th><th>使いみち</th></tr>
+                <tr><td><code>VBUS</code></td><td>40番</td><td>USBの5V。LCD1602 の電源</td></tr>
                 <tr><td><code>3V3(OUT)</code></td><td>36番</td><td>センサーの電源(3.3V)</td></tr>
                 <tr><td><code>GND</code></td><td>3, 8, 13, 18, 23, 28, 33, 38番</td><td>マイナス(どれを使ってもOK)</td></tr>
+                <tr><td><code>GP4 / I2C0 SDA</code></td><td>6番</td><td>LCD1602 の SDA</td></tr>
+                <tr><td><code>GP5 / I2C0 SCL</code></td><td>7番</td><td>LCD1602 の SCL</td></tr>
                 <tr><td><code>GP15</code></td><td>20番</td><td>LED・DHT22 の DATA</td></tr>
                 <tr><td><code>GP26 / ADC0</code></td><td>31番</td><td>土壌水分センサーなどアナログ値の読み取り</td></tr>
             </table>
@@ -545,6 +560,8 @@
                 <tr><td><code>Device is busy</code> / 実行できない</td><td>Pico で前のプログラム(<code>main.py</code> など)が動いています。Thonny の <strong>■「停止」</strong>を押してから実行してください。</td></tr>
                 <tr><td>DHT22で <code>OSError: [Errno 110] ETIMEDOUT</code></td><td>センサーから返事がありません。DATAのピン番号(GP15 = 20番ピン)、電源の向き、10kΩ の抵抗を確認してください。ときどき出るだけなら正常です。</td></tr>
                 <tr><td>土壌水分の値がずっと 0 や 65535 付近のまま</td><td>AOUT が GP26(31番ピン)につながっているか確認してください。センサーの電源は 3V3 につなぎます。</td></tr>
+                <tr><td>LCD1602 が光るだけで文字が出ない / ■ が並ぶ</td><td>LCDの裏の青い可変抵抗をドライバーで回して、文字の濃さを調整してください。</td></tr>
+                <tr><td><code>LCDが見つかりません</code> / <code>OSError: [Errno 5] EIO</code></td><td>LCDとの通信ができていません。SDA→GP4(6番)、SCL→GP5(7番)、VCC→VBUS(40番)、GND の配線を確認してください。SDA と SCL の入れちがいが多いです。</td></tr>
             </table>
             </div>
         </details>
@@ -728,6 +745,17 @@
                     const connection = document.createElement('p');
                     connection.innerHTML = '<strong>接続:</strong><br>' + toHtml(code.setup.connection);
                     usageNote.appendChild(connection);
+                }
+
+                // 配線図(等幅フォントで表示して位置をそろえる)
+                if (code.setup.diagram) {
+                    const diagramTitle = document.createElement('p');
+                    diagramTitle.innerHTML = '<strong>配線図:</strong>';
+                    usageNote.appendChild(diagramTitle);
+                    const diagram = document.createElement('pre');
+                    diagram.className = 'wiring-diagram';
+                    diagram.textContent = code.setup.diagram;
+                    usageNote.appendChild(diagram);
                 }
 
                 if (code.setup.notes) {
