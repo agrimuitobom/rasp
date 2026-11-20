@@ -401,6 +401,18 @@
             font-size: 13px;
         }
 
+        .wiring-diagram {
+            background: white;
+            margin: 5px 0 10px;
+            padding: 12px 15px;
+            font-size: 13px;
+            line-height: 1.35;
+        }
+
+        .wiring-diagram, .wiring-diagram * {
+            font-family: 'Courier New', Consolas, monospace;
+        }
+
         .table-wrap {
             overflow-x: auto;
         }
@@ -744,6 +756,17 @@ sudo reboot</code></pre>
                     const connection = document.createElement('p');
                     connection.innerHTML = '<strong>接続:</strong><br>' + toHtml(code.setup.connection);
                     usageNote.appendChild(connection);
+                }
+
+                // 配線図(等幅フォントで表示して位置をそろえる)
+                if (code.setup.diagram) {
+                    const diagramTitle = document.createElement('p');
+                    diagramTitle.innerHTML = '<strong>配線図:</strong>';
+                    usageNote.appendChild(diagramTitle);
+                    const diagram = document.createElement('pre');
+                    diagram.className = 'wiring-diagram';
+                    diagram.textContent = code.setup.diagram;
+                    usageNote.appendChild(diagram);
                 }
 
                 if (code.setup.notes) {

@@ -82,6 +82,41 @@
         "不快指数 0.81×温度 + 0.01×湿度×(0.99×温度 − 14.3) + 46.3 を計算して表示しよう",
         "土壌水分センサーとDHT22を同時につなぎ、温度・湿度・土の水分をまとめて表示しよう"
       ]
+    },
+    {
+      "id": "pico-dht22-lcd",
+      "title": "🌡️📺 DHT22の温湿度をLCD1602に表示",
+      "description": "DHT22で測った温度と湿度を、LCD1602(I2C)ディスプレイに表示します。パソコンにつながなくても、その場で温室やビニールハウスの温湿度が確認できます。",
+      "difficulty": "中級",
+      "tags": [
+        "MicroPython",
+        "センサー",
+        "ディスプレイ",
+        "LCD",
+        "I2C",
+        "IoT",
+        "農業"
+      ],
+      "filename": "dht22_lcd.py",
+      "parts": [
+        "DHT22 または DHT11(キットの青いセンサー)",
+        "LCD1602(I2C基板つき)",
+        "抵抗 10kΩ(DHTがモジュール基板つきなら不要)",
+        "ジャンパーワイヤー(オス-メス)×7"
+      ],
+      "code": "from machine import Pin, I2C\nimport dht\nimport time\n\n\n# ===== LCD1602(I2C / PCF8574)を動かすための部品 =====\n# MicroPython には LCD1602 用のライブラリが入っていないので、ここで作っています。\n# 中身は理解できなくてもOK。下の「メインの処理」から読みましょう。\nclass LCD1602:\n    def __init__(self, i2c, addr):\n        self.i2c = i2c\n        self.addr = addr\n        self.backlight = 0x08          # バックライトON\n        time.sleep_ms(50)\n        for _ in range(3):             # LCDを4ビットモードにする決まった手順\n            self._write4(0x30)\n            time.sleep_ms(5)\n        self._write4(0x20)\n        self._command(0x28)            # 2行表示・5x8ドット\n        self._command(0x0C)            # 表示ON・カーソルなし\n        self._command(0x06)            # 文字を書くたびに右へ進む\n        self.clear()\n\n    def _write4(self, data):\n        # PCF8574 のピン: P0=RS, P2=E(書き込み合図), P3=バックライト, P4~P7=データ\n        data |= self.backlight\n        self.i2c.writeto(self.addr, bytes([data | 0x04]))  # E=1\n        self.i2c.writeto(self.addr, bytes([data]))         # E=0 で書き込まれる\n\n    def _send(self, value, rs):\n        self._write4((value & 0xF0) | rs)          # 上位4ビット\n        self._write4(((value << 4) & 0xF0) | rs)   # 下位4ビット\n\n    def _command(self, cmd):\n        self._send(cmd, 0)\n\n    def clear(self):\n        self._command(0x01)\n        time.sleep_ms(2)\n\n    def move_to(self, col, row):\n        # col: 左から何文字目(0~15)  row: 何行目(0 または 1)\n        self._command(0x80 | (col + 0x40 * row))\n\n    def write(self, text):\n        for ch in text:\n            self._send(ord(ch) & 0xFF, 1)\n\n\n# ===== メインの処理 =====\n\n# I2C の設定(SDA=GP4, SCL=GP5)\ni2c = I2C(0, sda=Pin(4), scl=Pin(5), freq=100000)\n\n# LCD のアドレスを自動で探す(0x27 か 0x3F のことが多い)\nfound = i2c.scan()\nprint(\"見つかったI2C機器:\", [hex(a) for a in found])\nif not found:\n    raise SystemExit(\"LCDが見つかりません。SDA・SCL・電源の配線を確認してください\")\naddr = 0x27 if 0x27 in found else (0x3F if 0x3F in found else found[0])\nlcd = LCD1602(i2c, addr)\n\n# DHT22 の DATA を GP15 に接続\n# DHT11(青いセンサー)を使う場合は dht.DHT11 に変更\nsensor = dht.DHT22(Pin(15))\n\nDEG = chr(0xDF)   # LCD で「°」を表示するための文字\n\nlcd.move_to(0, 0)\nlcd.write(\"DHT22 + LCD1602\")\nlcd.move_to(0, 1)\nlcd.write(\"Starting...\")\nprint(\"温湿度の表示を開始!Thonnyの■(Stop)ボタンで停止\")\ntime.sleep(2)  # 電源を入れてすぐはセンサーが準備中なので少し待つ\n\ntry:\n    while True:\n        try:\n            sensor.measure()\n            temp = sensor.temperature()\n            humi = sensor.humidity()\n\n            # 16文字にそろえて書く(前の文字が残らないように)\n            line1 = \"Temp: {:5.1f}{}C\".format(temp, DEG)\n            line2 = \"Humi: {:5.1f} %\".format(humi)\n            lcd.move_to(0, 0)\n            lcd.write(\"{:<16}\".format(line1))\n            lcd.move_to(0, 1)\n            lcd.write(\"{:<16}\".format(line2))\n\n            print(\"温度: {:.1f}℃  湿度: {:.1f}%\".format(temp, humi))\n        except OSError:\n            # DHTはときどき読み取りに失敗する。次の回で再挑戦\n            print(\"読み取り失敗(もう一度測ります)\")\n\n        time.sleep(2)  # DHT22は2秒以上あけて測る\n\nexcept KeyboardInterrupt:\n    lcd.clear()\n    lcd.write(\"Bye!\")\n    print(\"プログラムを停止しました\")\n",
+      "setup": {
+        "connection": "【DHT22】\nDHT22 VCC(+)     → 3V3(OUT)(36番ピン)\nDHT22 DATA(OUT)  → GP15(20番ピン)\nDHT22 GND(−)     → GND(38番ピン)\n※ センサー単体(4本足)の場合は、VCC と DATA の間に 10kΩ の抵抗をつなぐ\n\n【LCD1602(裏にI2C基板がついたもの・4本の線)】\nLCD GND → GND(8番ピン)\nLCD VCC → VBUS(40番ピン・USBの5V)\nLCD SDA → GP4(6番ピン)\nLCD SCL → GP5(7番ピン)",
+        "command": "Thonnyでファイルを開いて ▶「実行」(F5)",
+        "notes": "MicroPython に LCD1602 用のライブラリは入っていないので、表示の仕組み(class LCD1602)もコードの中に書いてあります。このファイル1つだけで動きます(インストール不要)。\n\n【画面に何も出ないとき】\n1. LCDの裏にある青い部品(可変抵抗)をドライバーで回して、文字の濃さ(コントラスト)を調整する\n   → 四角(■)だけ並ぶ・何も見えないときは、ほとんどこれで直ります\n2. シェルに「見つかったI2C機器: []」と出るときは、SDA と SCL の入れちがい・GND・VCC の配線を確認\n\n【LCDの電源について】\nLCD1602 は 5V で動く部品なので、USBの5Vが出ている VBUS(40番ピン)につないでいます。Pico を USB でつないでいるときだけ使えます。\n⚠️ 3V3 につなぐと文字がうすくてほとんど見えないことがあります。\n⚠️ VCC と GND を逆につなぐと壊れます。電源を入れる前にもう一度確認しましょう。\n\nDHT22の注意点は「🌡️ 温湿度センサー(DHT22)」と同じです(2秒以上あけて測る、ときどき読み取り失敗が出るのは正常)。",
+        "diagram": "                      +--[USB]--+\n               GP0  1 |o       o| 40 VBUS     <- LCD VCC\n               GP1  2 |o       o| 39 VSYS\n               GND  3 |o       o| 38 GND      <- DHT22 GND\n               GP2  4 |o       o| 37 3V3_EN\n               GP3  5 |o       o| 36 3V3(OUT) <- DHT22 VCC\n   LCD SDA ->  GP4  6 |o       o| 35 ADC_VREF\n   LCD SCL ->  GP5  7 |o       o| 34 GP28\n   LCD GND ->  GND  8 |o       o| 33 GND\n                    : |       | :\nDHT22 DATA -> GP15 20 |o       o| 21 GP16\n                      +---------+"
+      },
+      "challenges": [
+        "温度が30℃を超えたら、2行目に「HOT!」と表示しよう",
+        "不快指数を計算して、2行目に「DI: 75.3」のように表示しよう",
+        "土壌水分センサーもつないで、1行目に温度、2行目に湿度と土の水分を表示しよう",
+        "電池やモバイルバッテリーで動くように main.py で保存して、温室に置いてみよう"
+      ]
     }
   ]
 }
