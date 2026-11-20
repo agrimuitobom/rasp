@@ -28,6 +28,38 @@
       ]
     },
     {
+      "id": "pico-button-led",
+      "title": "🔲 ボタンでLEDを制御",
+      "description": "ボタンを押している間だけLEDが点灯するプログラムです。Picoの内部プルアップ抵抗を使うので、ボタン用の抵抗はいりません。入力(ボタン)と出力(LED)の基本が学べます。",
+      "difficulty": "初級",
+      "tags": [
+        "MicroPython",
+        "GPIO",
+        "LED",
+        "ボタン"
+      ],
+      "filename": "button_led.py",
+      "parts": [
+        "LED×1",
+        "抵抗 220Ω×1",
+        "タクトスイッチ×1",
+        "ブレッドボード",
+        "ジャンパーワイヤー"
+      ],
+      "code": "from machine import Pin\nimport time\n\nled = Pin(15, Pin.OUT)                # LED を GP15 に接続\nbutton = Pin(14, Pin.IN, Pin.PULL_UP) # ボタンを GP14 に接続(内部プルアップを使う)\n\n# 本体のLEDを使うときは、1行目の led = ... を次の行に変える\n# led = Pin(\"LED\", Pin.OUT)\n\n# PULL_UP にすると、ボタンを\n#   押していないとき → 1\n#   押しているとき   → 0\n# になります(押すと GND とつながるため)\n\nprint(\"ボタンでLED制御開始!Thonnyの■(Stop)ボタンで停止\")\nprint(\"ボタンを押してください\")\n\ntry:\n    while True:\n        if button.value() == 0:   # ボタンが押されている\n            led.on()\n        else:\n            led.off()\n\n        time.sleep(0.01)  # 少し待ってPicoの負担を減らす\n\nexcept KeyboardInterrupt:\n    led.off()\n    print(\"プログラム停止\")\n",
+      "setup": {
+        "connection": "【LED】\nGP15(20番ピン) → 抵抗(220Ω) → LEDの長い足(+)\nLEDの短い足(−) → GND(18番ピン)\n\n【ボタン】\nGP14(19番ピン) → ボタンの片側\nボタンの反対側 → GND(18番ピン)",
+        "diagram": "                   +--[USB]--+\n           GP0   1 |o       o| 40 VBUS\n                 : |         | :\n           GND  18 |o       o| 23 GND\nBUTTON ->  GP14 19 |o       o| 22 GP17\n   LED ->  GP15 20 |o       o| 21 GP16\n                   +---------+\n\nGP15(20) --[220ohm]-- LED(+ long) LED(- short) -- GND(18)\nGP14(19) ------------ BUTTON ------------------- GND(18)",
+        "command": "Thonnyでファイルを開いて ▶「実行」(F5)",
+        "notes": "GND(18番ピン)はLEDとボタンの両方で使うので、ブレッドボードの「−」の列(青い線)にいったんつないでから分けると配線しやすいです。\n\nタクトスイッチ(4本足)は、対角線上の2本の足を使うと確実です。向きをまちがえると、押していなくてもずっと点灯(または消灯)します。\n\n本体のLEDで試すときは、コメントのとおり led = Pin(\"LED\", Pin.OUT) に変えれば、LEDと抵抗の配線はいりません。"
+      },
+      "challenges": [
+        "ボタンを押すたびにLEDが ON → OFF → ON と切りかわるようにしよう(ヒント: 前回のボタンの値を変数に覚えておき、1 から 0 に変わった瞬間だけ led.toggle() する)",
+        "ボタンを押した回数をシェルに表示しよう",
+        "ボタンを押している間だけ、LEDが速く点滅するようにしよう"
+      ]
+    },
+    {
       "id": "pico-soil-moisture",
       "title": "🌱 土壌水分センサー",
       "description": "土壌水分センサーのアナログ値を ADC(アナログ→デジタル変換)で読み取り、水分を0〜100%で表示します。乾いているときは「水やりが必要!」と知らせます。",
